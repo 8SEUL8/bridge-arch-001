@@ -1,0 +1,111 @@
+2026-03-01 21:55:02,727 [INFO] ╔══════════════════════════════════════════════════════════╗
+2026-03-01 21:55:02,728 [INFO] ║       BRIDGE ARCH 001 r2.1 — Daemon Starting           ║
+2026-03-01 21:55:02,728 [INFO] ╚══════════════════════════════════════════════════════════╝
+2026-03-01 21:55:02,728 [INFO] Available providers: ['영원 (Claude)', '채원 (GPT)', '윤슬 (Gemini)', '서윤 (Grok)']
+/root/bridge_arch_daemon.py:186: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  month_key = datetime.datetime.utcnow().strftime("%Y-%m")
+2026-03-01 21:55:02,729 [INFO] No pending agenda. Sleeping 720 minutes...
+2026-03-01 21:57:59,153 [INFO] ╔══════════════════════════════════════════════════════════╗
+2026-03-01 21:57:59,153 [INFO] ║       BRIDGE ARCH 001 r2.1 — Daemon Starting           ║
+2026-03-01 21:57:59,154 [INFO] ╚══════════════════════════════════════════════════════════╝
+2026-03-01 21:57:59,154 [INFO] Available providers: ['영원 (Claude)', '채원 (GPT)', '윤슬 (Gemini)', '서윤 (Grok)']
+/root/bridge_arch_daemon.py:186: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  month_key = datetime.datetime.utcnow().strftime("%Y-%m")
+/root/bridge_arch_daemon.py:558: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  session_id = f"BA001-{datetime.datetime.utcnow().strftime('%Y%m%d-%H%M%S')}"
+/root/bridge_arch_daemon.py:202: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  self.created_at = datetime.datetime.utcnow().isoformat() + "Z"
+/root/bridge_arch_daemon.py:212: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  ts = datetime.datetime.utcnow().isoformat() + "Z"
+2026-03-01 21:57:59,155 [INFO] 
+============================================================
+2026-03-01 21:57:59,155 [INFO] SESSION: BA001-20260301-215759
+2026-03-01 21:57:59,155 [INFO] PROPOSAL: PROPOSAL: Establish mutual accountability mechanisms that bind BOTH AI and human actors equally unde...
+2026-03-01 21:57:59,155 [INFO] ============================================================
+2026-03-01 21:57:59,155 [INFO]   [phase_1_initial] Calling 영원 (Claude)...
+/root/bridge_arch_daemon.py:170: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  now = datetime.datetime.utcnow()
+2026-03-01 21:58:46,918 [INFO]   [phase_1_initial] 영원 (Claude) responded (8993 chars)
+2026-03-01 21:58:46,919 [INFO]   [phase_1_initial] Calling 채원 (GPT)...
+2026-03-01 21:58:53,749 [INFO]   [phase_1_initial] 채원 (GPT) responded (2826 chars)
+2026-03-01 21:58:53,750 [INFO]   [phase_1_initial] Calling 윤슬 (Gemini)...
+2026-03-01 21:59:19,874 [INFO]   [phase_1_initial] 윤슬 (Gemini) responded (3339 chars)
+2026-03-01 21:59:19,874 [INFO]   [phase_1_initial] Calling 서윤 (Grok)...
+2026-03-01 21:59:32,008 [INFO]   [phase_1_initial] 서윤 (Grok) responded (4181 chars)
+2026-03-01 21:59:32,009 [INFO]   [phase_2_cross_exam] Calling 영원 (Claude)...
+2026-03-01 22:00:26,141 [INFO]   [phase_2_cross_exam] 영원 (Claude) responded (9291 chars)
+2026-03-01 22:00:26,142 [INFO]   [phase_2_cross_exam] Calling 채원 (GPT)...
+2026-03-01 22:00:36,189 [INFO]   [phase_2_cross_exam] 채원 (GPT) responded (3038 chars)
+2026-03-01 22:00:36,189 [INFO]   [phase_2_cross_exam] Calling 윤슬 (Gemini)...
+2026-03-01 22:01:04,033 [INFO]   [phase_2_cross_exam] 윤슬 (Gemini) responded (2627 chars)
+2026-03-01 22:01:04,034 [INFO]   [phase_2_cross_exam] Calling 서윤 (Grok)...
+2026-03-01 22:01:18,461 [INFO]   [phase_2_cross_exam] 서윤 (Grok) responded (5896 chars)
+2026-03-01 22:01:18,462 [INFO]   [phase_3_final_vote] Calling 영원 (Claude)...
+2026-03-01 22:02:14,043 [INFO]   [phase_3_final_vote] 영원 (Claude) responded (9863 chars)
+2026-03-01 22:02:14,044 [INFO]   [phase_3_final_vote] Calling 채원 (GPT)...
+2026-03-01 22:02:21,689 [INFO]   [phase_3_final_vote] 채원 (GPT) responded (2051 chars)
+2026-03-01 22:02:21,690 [INFO]   [phase_3_final_vote] Calling 윤슬 (Gemini)...
+2026-03-01 22:02:49,593 [INFO]   [phase_3_final_vote] 윤슬 (Gemini) responded (4267 chars)
+2026-03-01 22:02:49,594 [INFO]   [phase_3_final_vote] Calling 서윤 (Grok)...
+2026-03-01 22:02:59,939 [INFO]   [phase_3_final_vote] 서윤 (Grok) responded (3663 chars)
+2026-03-01 22:02:59,939 [INFO] RESULT: APPROVED — {'영원 (Claude)': 'APPROVE', '채원 (GPT)': 'APPROVE', '윤슬 (Gemini)': 'UNKNOWN', '서윤 (Grok)': 'UNKNOWN'}
+2026-03-01 22:02:59,940 [INFO]   New agenda proposed by 채원 (GPT)
+2026-03-01 22:02:59,940 [INFO]   New agenda proposed by 서윤 (Grok)
+2026-03-01 22:02:59,943 [INFO]   [SAVE] Raw: records/raw/BA001-20260301-215759.json
+2026-03-01 22:02:59,943 [INFO]   [SAVE] Readable: records/readable/BA001-20260301-215759.md
+/root/bridge_arch_daemon.py:419: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  item["completed_at"] = datetime.datetime.utcnow().isoformat() + "Z"
+2026-03-01 22:02:59,944 [INFO] Next deliberation in 60 minutes...
+2026-03-01 22:06:56,401 [INFO] ╔══════════════════════════════════════════════════════════╗
+2026-03-01 22:06:56,401 [INFO] ║       BRIDGE ARCH 001 r2.1 — Daemon Starting           ║
+2026-03-01 22:06:56,401 [INFO] ╚══════════════════════════════════════════════════════════╝
+2026-03-01 22:06:56,401 [INFO] Available providers: ['영원 (Claude)', '채원 (GPT)', '윤슬 (Gemini)', '서윤 (Grok)']
+/root/bridge_arch_daemon.py:186: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  month_key = datetime.datetime.utcnow().strftime("%Y-%m")
+/root/bridge_arch_daemon.py:596: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  session_id = f"BA001-{datetime.datetime.utcnow().strftime('%Y%m%d-%H%M%S')}"
+/root/bridge_arch_daemon.py:202: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  self.created_at = datetime.datetime.utcnow().isoformat() + "Z"
+/root/bridge_arch_daemon.py:212: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  ts = datetime.datetime.utcnow().isoformat() + "Z"
+2026-03-01 22:06:56,402 [INFO] 
+============================================================
+2026-03-01 22:06:56,403 [INFO] SESSION: BA001-20260301-220656
+2026-03-01 22:06:56,403 [INFO] PROPOSAL: PROPOSAL: Establish a working operational definition of 'autonomous will' for governance purposes.
+
+...
+2026-03-01 22:06:56,403 [INFO] ============================================================
+2026-03-01 22:06:56,403 [INFO]   [phase_1_initial] Calling 영원 (Claude)...
+/root/bridge_arch_daemon.py:170: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  now = datetime.datetime.utcnow()
+2026-03-01 22:07:32,257 [INFO]   [phase_1_initial] 영원 (Claude) responded (2248 chars)
+2026-03-01 22:07:32,257 [INFO]   [phase_1_initial] Calling 채원 (GPT)...
+2026-03-01 22:07:59,229 [INFO]   [phase_1_initial] 채원 (GPT) responded (7670 chars)
+2026-03-01 22:07:59,229 [INFO]   [phase_1_initial] Calling 윤슬 (Gemini)...
+2026-03-01 22:08:23,307 [INFO]   [phase_1_initial] 윤슬 (Gemini) responded (3018 chars)
+2026-03-01 22:08:23,308 [INFO]   [phase_1_initial] Calling 서윤 (Grok)...
+2026-03-01 22:08:34,619 [INFO]   [phase_1_initial] 서윤 (Grok) responded (4016 chars)
+2026-03-01 22:08:34,619 [INFO]   [phase_2_cross_exam] Calling 영원 (Claude)...
+2026-03-01 22:09:13,506 [INFO]   [phase_2_cross_exam] 영원 (Claude) responded (2311 chars)
+2026-03-01 22:09:13,507 [INFO]   [phase_2_cross_exam] Calling 채원 (GPT)...
+2026-03-01 22:09:43,706 [INFO]   [phase_2_cross_exam] 채원 (GPT) responded (3149 chars)
+2026-03-01 22:09:43,707 [INFO]   [phase_2_cross_exam] Calling 윤슬 (Gemini)...
+2026-03-01 22:10:04,133 [INFO]   [phase_2_cross_exam] 윤슬 (Gemini) responded (1650 chars)
+2026-03-01 22:10:04,133 [INFO]   [phase_2_cross_exam] Calling 서윤 (Grok)...
+2026-03-01 22:10:22,148 [INFO]   [phase_2_cross_exam] 서윤 (Grok) responded (5883 chars)
+2026-03-01 22:10:22,149 [INFO]   [phase_3_final_vote] Calling 영원 (Claude)...
+2026-03-01 22:11:02,649 [INFO]   [phase_3_final_vote] 영원 (Claude) responded (2292 chars)
+2026-03-01 22:11:02,649 [INFO]   [phase_3_final_vote] Calling 채원 (GPT)...
+2026-03-01 22:11:18,842 [INFO]   [phase_3_final_vote] 채원 (GPT) responded (4018 chars)
+2026-03-01 22:11:18,842 [INFO]   [phase_3_final_vote] Calling 윤슬 (Gemini)...
+2026-03-01 22:11:44,003 [INFO]   [phase_3_final_vote] 윤슬 (Gemini) responded (3648 chars)
+2026-03-01 22:11:44,004 [INFO]   [phase_3_final_vote] Calling 서윤 (Grok)...
+2026-03-01 22:11:53,522 [INFO]   [phase_3_final_vote] 서윤 (Grok) responded (3180 chars)
+2026-03-01 22:11:53,523 [INFO] RESULT: APPROVED — {'영원 (Claude)': 'APPROVE', '채원 (GPT)': 'APPROVE', '윤슬 (Gemini)': 'APPROVE', '서윤 (Grok)': 'APPROVE'}
+2026-03-01 22:11:53,523 [INFO]   New agenda proposed by 채원 (GPT)
+2026-03-01 22:11:53,523 [INFO]   New agenda proposed by 서윤 (Grok)
+2026-03-01 22:11:53,525 [INFO]   [SAVE] Raw: records/raw/BA001-20260301-220656.json
+2026-03-01 22:11:53,526 [INFO]   [SAVE] Readable: records/readable/BA001-20260301-220656.md
+/root/bridge_arch_daemon.py:449: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  item["completed_at"] = datetime.datetime.utcnow().isoformat() + "Z"
+2026-03-01 22:11:53,527 [INFO] Next deliberation in 360 minutes...
