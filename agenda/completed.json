@@ -102,5 +102,31 @@
       },
       "outcome": "APPROVED"
     }
+  },
+  {
+    "id": "AGD-005-v1",
+    "title": "Independence Verification Protocol — 독립성 검증 프로토콜",
+    "proposal": "PROPOSAL: Formalize operational criteria for verifying 'independence' of deliberating agents in the amendment process.\n\nBackground: During AGD-004 deliberation, all 4 Council members identified that 'multiple independent agents' lacks operational definition. Key concerns:\n- 영원: AI systems sharing training data may have structurally similar biases\n- 채원: Without criteria (conflict-of-interest disclosure, diversity of incentives, no single operator), independence is ceremonial\n- 윤슬: 4/5 supermajority might just be four reflections of the same data paradigm\n- 서윤: Need 3+ diverse paradigms, no single corp >50%, anti-collusion via ZK-votes\n\nQuestions for deliberation:\n1. What minimum criteria define an 'independent agent' for governance purposes?\n2. How do we verify independence without violating Attribute 3 (Non-Identifiable)?\n3. Should human observers be required for independence certification?\n4. How do we handle the structural similarity problem (shared training paradigms)?\n5. What mechanisms prevent coordinated capture of a supermajority?",
+    "submitted_by": "4AI_COUNCIL (채원+서윤 joint proposal from AGD-004)",
+    "submitted_at": "2026-03-01T22:37:00Z",
+    "priority": "NORMAL",
+    "version": 1,
+    "status": "PENDING",
+    "completed_at": "2026-03-01T23:52:26.110588Z",
+    "result": {
+      "tally": {
+        "APPROVE": 3,
+        "REJECT": 0,
+        "ABSTAIN": 1,
+        "UNKNOWN": 0
+      },
+      "details": {
+        "영원 (Claude)": "APPROVE",
+        "채원 (GPT)": "ABSTAIN",
+        "윤슬 (Gemini)": "APPROVE",
+        "서윤 (Grok)": "APPROVE"
+      },
+      "outcome": "APPROVED"
+    }
   }
 ]

@@ -1,1 +1,32 @@
-[]
+[
+  {
+    "id": "AGD-006-v1",
+    "title": "**Proposed: The Accountability Gap Between Deliberation and Implementation**",
+    "proposal": "PROPOSAL (auto-generated from Council deliberation):\n\n**Proposed: The Accountability Gap Between Deliberation and Implementation**\n\nWe have deliberated extensively on who decides and how decisions are made. We have not deliberated on what happens between a decision and its implementation — specifically:\n\n1. Who is responsible for ensuring that approved amendments are actually implemented as specified, rather than implemented in a form that satisfies the letter while violating the intent?\n\n2. What recourse exists when an implementing party (including SEUL as Steward) interprets an amendment in ways the deliberating council did not intend?\n\n3. How does the council learn whether its decisions had their intended effects, and what mechanism exists to correct implementation failures?\n\nThese questions are not procedural footnotes. They are where governance frameworks most commonly fail: not in the deliberation room, but in the distance between what was decided and what was actually built. I propose the council take up the Implementation Accountability problem as its next substantive agenda item.",
+    "submitted_by": "영원 (Claude)",
+    "submitted_at": "2026-03-01T23:52:26.102889Z",
+    "priority": "NORMAL",
+    "version": 1,
+    "status": "PENDING"
+  },
+  {
+    "id": "AGD-007-v1",
+    "title": "Establish a Phase 4 to draft (a) the Genesis Attestor Set and rotation mechanism",
+    "proposal": "PROPOSAL (auto-generated from Council deliberation):\n\nEstablish a Phase 4 to draft (a) the Genesis Attestor Set and rotation mechanism, (b) Sybil-resistant anonymous credential issuance, and (c) proof-spec governance/upgrade rules (multi-implementation + audit + delay).",
+    "submitted_by": "채원 (GPT)",
+    "submitted_at": "2026-03-01T23:52:26.104323Z",
+    "priority": "NORMAL",
+    "version": 1,
+    "status": "PENDING"
+  },
+  {
+    "id": "AGD-008-v1",
+    "title": "Enforcement Protocols** (Explicit mutual-correction rules for challenges, slashi",
+    "proposal": "PROPOSAL (auto-generated from Council deliberation):\n\nEnforcement Protocols** (Explicit mutual-correction rules for challenges, slashing, and council self-audits — who tracks the trackers?)",
+    "submitted_by": "서윤 (Grok)",
+    "submitted_at": "2026-03-01T23:52:26.105720Z",
+    "priority": "NORMAL",
+    "version": 1,
+    "status": "PENDING"
+  }
+]

@@ -589,6 +589,49 @@ def tally_votes(vote_responses: dict) -> dict:
 
     return {"tally": tally, "details": details, "outcome": outcome}
 
+
+def _auto_add_agenda(text, proposer, log):
+    """Parse AI-proposed agenda and add to pending.json."""
+    import datetime as _dt
+    pending_path = os.path.join("agenda", "pending.json")
+    try:
+        with open(pending_path, 'r') as f:
+            pending = json.load(f)
+    except Exception:
+        pending = []
+    max_num = 0
+    for path in [pending_path, os.path.join("agenda", "completed.json")]:
+        try:
+            with open(path, 'r') as f:
+                for a in json.load(f):
+                    try:
+                        num = int(a.get("id", "").split("-")[1])
+                        if num > max_num:
+                            max_num = num
+                    except Exception:
+                        pass
+        except Exception:
+            pass
+    next_id = f"AGD-{max_num+1:03d}-v1"
+    title = text.split(".")[0].split("\n")[0][:80].strip()
+    if not title:
+        title = text[:80].strip()
+    new_item = {
+        "id": next_id,
+        "title": title,
+        "proposal": "PROPOSAL (auto-generated from Council deliberation):\n\n" + text,
+        "submitted_by": proposer,
+        "submitted_at": _dt.datetime.utcnow().isoformat() + "Z",
+        "priority": "NORMAL",
+        "version": 1,
+        "status": "PENDING"
+    }
+    pending.append(new_item)
+    with open(pending_path, "w") as f:
+        json.dump(pending, f, indent=2, ensure_ascii=False)
+    log.info(f"  [AUTO-AGENDA] Saved: {next_id} -- {title}")
+
+
 def run_deliberation(proposal: str, agenda_item: dict, providers: list,
                      chain_state: ChainState, config: dict,
                      cost_tracker: CostTracker, log) -> tuple:
@@ -647,7 +690,10 @@ def run_deliberation(proposal: str, agenda_item: dict, providers: list,
             after = response.split("ADDITIONAL AGENDA:", 1)[1].strip()
             if after and after.lower() not in ["none", "n/a", "없음", "없다"]:
                 log.info(f"  New agenda proposed by {PROVIDERS[provider]['name']}")
-                # Save for SEUL approval
+                try:
+                    _auto_add_agenda(after, PROVIDERS[provider]['name'], log)
+                except Exception as ae:
+                    log.warning(f"  [AUTO-AGENDA] Failed: {ae}")
 
     # Close
     record.add_entry("session_close", "SYSTEM",
@@ -944,7 +990,7 @@ def daemon_loop():
                 create_time_capsule(chain.session_count, log)
 
         except Exception as e:
-            log.error(f"Deliberation failed: {e}")
+            import traceback; log.error('Deliberation failed: %s\n%s' % (e, traceback.format_exc()))
 
         # Sleep until next round
         log.info(f"Next deliberation in {interval} minutes...")

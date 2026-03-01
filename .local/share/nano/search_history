@@ -2,6 +2,13 @@ extract_vote
 system_
 system_prompt
 system_prompt = """
+log.info
+log.info(f"
+New Agenda
+check for AI-proposed agenda
+new agenda
+New agenda
+deliberation failed
 
 
 
