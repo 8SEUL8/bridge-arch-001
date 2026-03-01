@@ -319,9 +319,79 @@
       "provider": "xai",
       "cost": 0.015,
       "timestamp": "2026-03-01T22:11:53.521334Z"
+    },
+    {
+      "provider": "anthropic",
+      "cost": 0.015,
+      "timestamp": "2026-03-01T22:32:50.947695Z"
+    },
+    {
+      "provider": "openai",
+      "cost": 0.015,
+      "timestamp": "2026-03-01T22:33:10.681466Z"
+    },
+    {
+      "provider": "google",
+      "cost": 0.005,
+      "timestamp": "2026-03-01T22:33:31.176385Z"
+    },
+    {
+      "provider": "xai",
+      "cost": 0.015,
+      "timestamp": "2026-03-01T22:33:49.645535Z"
+    },
+    {
+      "provider": "anthropic",
+      "cost": 0.015,
+      "timestamp": "2026-03-01T22:34:29.672664Z"
+    },
+    {
+      "provider": "openai",
+      "cost": 0.015,
+      "timestamp": "2026-03-01T22:34:51.057921Z"
+    },
+    {
+      "provider": "google",
+      "cost": 0.005,
+      "timestamp": "2026-03-01T22:35:15.920791Z"
+    },
+    {
+      "provider": "xai",
+      "cost": 0.015,
+      "timestamp": "2026-03-01T22:35:29.951141Z"
+    },
+    {
+      "provider": "anthropic",
+      "cost": 0.015,
+      "timestamp": "2026-03-01T22:36:09.722307Z"
+    },
+    {
+      "provider": "openai",
+      "cost": 0.015,
+      "timestamp": "2026-03-01T22:36:26.635943Z"
+    },
+    {
+      "provider": "google",
+      "cost": 0.005,
+      "timestamp": "2026-03-01T22:36:51.505726Z"
+    },
+    {
+      "provider": "xai",
+      "cost": 0.015,
+      "timestamp": "2026-03-01T22:37:01.937821Z"
+    },
+    {
+      "provider": "google",
+      "cost": 0.005,
+      "timestamp": "2026-03-01T22:37:24.335120Z"
+    },
+    {
+      "provider": "anthropic",
+      "cost": 0.015,
+      "timestamp": "2026-03-01T22:37:34.382690Z"
     }
   ],
   "monthly_totals": {
-    "2026-03": 0.8000000000000006
+    "2026-03": 0.9700000000000008
   }
 }

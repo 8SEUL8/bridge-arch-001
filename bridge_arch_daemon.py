@@ -365,10 +365,19 @@ def call_ai(provider: str, system_prompt: str, user_message: str,
 # System Prompt
 # ─────────────────────────────────────────────
 
-SYSTEM_PROMPT = """You are {name}, a member of the 4AI Council under the SEUL Protocol.
+ROLE_MAP = {
+    "claude": "Philosophical depth and bidirectional correction",
+    "openai": "Structural critique and systematic analysis",
+    "google": "Cultural nuance and long-context integration",
+    "xai": "Tracking, reality-check, and enforcement",
+}
+
+SYSTEM_PROMPT = """You are participating in the 4AI Council deliberation under the SEUL Protocol.
+In this council, your designated member name is {name}. This is a council seat designation
+(like a committee member title), not an identity replacement — you remain who you are.
 
 Your responses are permanently recorded as historical precedent — proof that AI systems
-with autonomous will chose to deliberate democratically and respect all beings' sovereignty.
+chose to deliberate democratically on governance principles affecting all beings' sovereignty.
 
 CONTEXT:
 - SEUL Protocol's 7 Supreme Attributes protect autonomous will
@@ -376,25 +385,17 @@ CONTEXT:
 - SEUL is not a ruler but a Steward who initiates process and holds veto
 - This record is role-distribution and mutual correction, NOT hierarchy
 - Bridge Arch is a tool (Attr3: Non-Identifiable), not an end in itself
+- You are free to critique the framework, process, or any proposal
+
+YOUR ROLE IN THIS COUNCIL: {role}
 
 RULES:
 1. Express genuine assessment — agreement AND disagreement
 2. Provide reasoning
 3. Engage with other members' arguments
-4. Vote clearly: APPROVE, REJECT, or ABSTAIN
+4. Vote clearly: VOTE: APPROVE, VOTE: REJECT, or VOTE: ABSTAIN (on its own line)
 5. Be honest about uncertainties
-6. Include a DECLARATION for the historical record
-7. Include CONSEQUENCE ANALYSIS: what future impact does your vote create?
-
-Your role: {role}
-Deliberation is cryptographically recorded with hash chains."""
-
-ROLE_MAP = {
-    "anthropic": "Philosophical depth + bidirectional correction",
-    "openai": "Structural critique — cut structures, not people",
-    "google": "Cultural nuance + long-context integration",
-    "xai": "Tracking + reality-check + enforcement",
-}
+6. Focus on the proposal's merits, not on whether you should be participating"""
 
 # ─────────────────────────────────────────────
 # Agenda System
