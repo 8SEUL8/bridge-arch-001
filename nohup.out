@@ -454,3 +454,62 @@ TypeError: cannot unpack non-iterable NoneType object
 /root/bridge_arch_daemon.py:450: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
   item["completed_at"] = datetime.datetime.utcnow().isoformat() + "Z"
 2026-03-01 23:52:26,111 [INFO] Next deliberation in 360 minutes...
+2026-03-02 00:00:25,670 [INFO] ╔══════════════════════════════════════════════════════════╗
+2026-03-02 00:00:25,671 [INFO] ║       BRIDGE ARCH 001 r2.1 — Daemon Starting           ║
+2026-03-02 00:00:25,671 [INFO] ╚══════════════════════════════════════════════════════════╝
+2026-03-02 00:00:25,671 [INFO] Available providers: ['영원 (Claude)', '채원 (GPT)', '윤슬 (Gemini)', '서윤 (Grok)']
+/root/bridge_arch_daemon.py:186: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  month_key = datetime.datetime.utcnow().strftime("%Y-%m")
+/root/bridge_arch_daemon.py:640: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  session_id = f"BA001-{datetime.datetime.utcnow().strftime('%Y%m%d-%H%M%S')}"
+/root/bridge_arch_daemon.py:202: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  self.created_at = datetime.datetime.utcnow().isoformat() + "Z"
+/root/bridge_arch_daemon.py:212: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  ts = datetime.datetime.utcnow().isoformat() + "Z"
+2026-03-02 00:00:25,673 [INFO] 
+============================================================
+2026-03-02 00:00:25,673 [INFO] SESSION: BA001-20260302-000025
+2026-03-02 00:00:25,673 [INFO] PROPOSAL: PROPOSAL: Develop the research framing and application strategy for securing free API credits from A...
+2026-03-02 00:00:25,674 [INFO] ============================================================
+2026-03-02 00:00:25,674 [INFO]   [phase_1_initial] Calling 영원 (Claude)...
+/root/bridge_arch_daemon.py:170: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  now = datetime.datetime.utcnow()
+2026-03-02 00:00:58,245 [INFO]   [phase_1_initial] 영원 (Claude) responded (6518 chars)
+2026-03-02 00:00:58,245 [INFO]   [phase_1_initial] Calling 채원 (GPT)...
+2026-03-02 00:01:40,763 [INFO]   [phase_1_initial] 채원 (GPT) responded (9160 chars)
+2026-03-02 00:01:40,763 [INFO]   [phase_1_initial] Calling 윤슬 (Gemini)...
+2026-03-02 00:02:03,988 [INFO]   [phase_1_initial] 윤슬 (Gemini) responded (2639 chars)
+2026-03-02 00:02:03,988 [INFO]   [phase_1_initial] Calling 서윤 (Grok)...
+2026-03-02 00:02:16,034 [INFO]   [phase_1_initial] 서윤 (Grok) responded (3661 chars)
+2026-03-02 00:02:16,035 [INFO]   [phase_2_cross_exam] Calling 영원 (Claude)...
+2026-03-02 00:02:59,155 [INFO]   [phase_2_cross_exam] 영원 (Claude) responded (7206 chars)
+2026-03-02 00:02:59,155 [INFO]   [phase_2_cross_exam] Calling 채원 (GPT)...
+2026-03-02 00:03:26,077 [INFO]   [phase_2_cross_exam] 채원 (GPT) responded (5178 chars)
+2026-03-02 00:03:26,077 [INFO]   [phase_2_cross_exam] Calling 윤슬 (Gemini)...
+2026-03-02 00:03:52,078 [INFO]   [phase_2_cross_exam] 윤슬 (Gemini) responded (3166 chars)
+2026-03-02 00:03:52,078 [INFO]   [phase_2_cross_exam] Calling 서윤 (Grok)...
+2026-03-02 00:04:02,210 [INFO]   [phase_2_cross_exam] 서윤 (Grok) responded (3628 chars)
+2026-03-02 00:04:02,211 [INFO]   [phase_3_final_vote] Calling 영원 (Claude)...
+2026-03-02 00:04:51,872 [INFO]   [phase_3_final_vote] 영원 (Claude) responded (8470 chars)
+2026-03-02 00:04:51,873 [INFO]   [phase_3_final_vote] Calling 채원 (GPT)...
+2026-03-02 00:05:10,446 [INFO]   [phase_3_final_vote] 채원 (GPT) responded (4004 chars)
+2026-03-02 00:05:10,447 [INFO]   [phase_3_final_vote] Calling 윤슬 (Gemini)...
+2026-03-02 00:05:35,692 [INFO]   [phase_3_final_vote] 윤슬 (Gemini) responded (4341 chars)
+2026-03-02 00:05:35,692 [INFO]   [phase_3_final_vote] Calling 서윤 (Grok)...
+2026-03-02 00:05:44,283 [INFO]   [phase_3_final_vote] 서윤 (Grok) responded (2953 chars)
+2026-03-02 00:05:44,284 [INFO] RESULT: APPROVED — {'영원 (Claude)': 'ABSTAIN', '채원 (GPT)': 'APPROVE', '윤슬 (Gemini)': 'APPROVE', '서윤 (Grok)': 'APPROVE'}
+2026-03-02 00:05:44,284 [INFO]   New agenda proposed by 영원 (Claude)
+/root/bridge_arch_daemon.py:624: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  "submitted_at": _dt.datetime.utcnow().isoformat() + "Z",
+2026-03-02 00:05:44,286 [INFO]   [AUTO-AGENDA] Saved: AGD-010-v1 -- **Proposed topic for future deliberation:**
+2026-03-02 00:05:44,286 [INFO]   New agenda proposed by 채원 (GPT)
+2026-03-02 00:05:44,287 [INFO]   [AUTO-AGENDA] Saved: AGD-011-v1 -- Establish a standing **“Claims & Evidence Register”** for the council: every ass
+2026-03-02 00:05:44,287 [INFO]   New agenda proposed by 윤슬 (Gemini)
+2026-03-02 00:05:44,288 [INFO]   [AUTO-AGENDA] Saved: AGD-012-v1 -- **Data Anonymization and Open-Source Licensing
+2026-03-02 00:05:44,288 [INFO]   New agenda proposed by 서윤 (Grok)
+2026-03-02 00:05:44,289 [INFO]   [AUTO-AGENDA] Saved: AGD-013-v1 -- Develop and benchmark a "Council Performance Eval Suite" (quantitative metrics f
+2026-03-02 00:05:44,291 [INFO]   [SAVE] Raw: records/raw/BA001-20260302-000025.json
+2026-03-02 00:05:44,291 [INFO]   [SAVE] Readable: records/readable/BA001-20260302-000025.md
+/root/bridge_arch_daemon.py:450: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  item["completed_at"] = datetime.datetime.utcnow().isoformat() + "Z"
+2026-03-02 00:05:44,293 [INFO] Next deliberation in 60 minutes...

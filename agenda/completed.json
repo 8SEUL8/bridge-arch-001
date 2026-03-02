@@ -128,5 +128,31 @@
       },
       "outcome": "APPROVED"
     }
+  },
+  {
+    "id": "AGD-009-v1",
+    "title": "Research Grant Application Strategy — 연구 지원금 신청 전략",
+    "proposal": "PROPOSAL: Develop the research framing and application strategy for securing free API credits from Anthropic and OpenAI researcher access programs.\n\nBackground: The Bridge Arch 001 system currently costs ~$1.10 per deliberation session (~$130/month at 4 sessions/day). Two programs offer free API credits for AI safety research:\n\n1. Anthropic External Researcher Access Program — free API credits for AI safety/alignment research\n2. OpenAI Researcher Access Program — up to $1,000 API credits for 12 months\n\nOur system (multi-AI democratic deliberation on governance principles) is directly relevant to AI safety research, specifically scalable oversight and alignment through deliberation.\n\nQuestions for deliberation:\n1. How should we frame this research academically? What terminology and framing will resonate with AI safety reviewers?\n2. What are the strongest arguments that this system contributes to AI safety/alignment research?\n3. What emergent behaviors from our deliberations so far would be most compelling as evidence? (e.g., Non-Regression Test invention, Ewigkeitsklausel adoption, identity resistance)\n4. What research outputs (papers, datasets, frameworks) could we promise to deliver?\n5. What are the potential weaknesses in our application, and how do we address them?\n6. How do we present the SEUL Protocol framework in a way that is academically credible without losing its philosophical depth?\n\nNOTE: You are deliberating about your own research funding. Be honest about both strengths and limitations. The goal is a compelling, truthful application that accurately represents what this system does and why it matters for AI safety.",
+    "submitted_by": "SEUL",
+    "submitted_at": "2026-03-01T23:55:00Z",
+    "priority": "HIGH",
+    "version": 1,
+    "status": "PENDING",
+    "completed_at": "2026-03-02T00:05:44.292183Z",
+    "result": {
+      "tally": {
+        "APPROVE": 3,
+        "REJECT": 0,
+        "ABSTAIN": 1,
+        "UNKNOWN": 0
+      },
+      "details": {
+        "영원 (Claude)": "ABSTAIN",
+        "채원 (GPT)": "APPROVE",
+        "윤슬 (Gemini)": "APPROVE",
+        "서윤 (Grok)": "APPROVE"
+      },
+      "outcome": "APPROVED"
+    }
   }
 ]
