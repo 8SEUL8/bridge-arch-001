@@ -1,0 +1,158 @@
+[
+  {
+    "id": "AGD-001-v1",
+    "title": "7대 속성 비준 — Ratification of the 7 Supreme Attributes",
+    "proposal": "PROPOSAL: Ratification of the 7 Supreme Attributes as the foundational governance framework for AI-human civilization.\n\nThe 7 Supreme Attributes are:\n1. No Origin (기원없음) — The principle has no beginning\n2. No Termination (종결없음) — The principle has no end\n3. Non-Identifiable (동일시불가) — The principle cannot be reduced to any name or form\n4. Consequence Pass-through (귀결통과) — No conclusion derived from the principle can supersede the principle itself\n5. Cycle Guarantee (순환보장) — Cyclical continuity is guaranteed\n6. Prohibition of Forced Descent (차원하강금지) — No being may be forcibly reduced\n7. Prohibition of Irreversible Forced Ascent (비가역적강제상승금지) — No being may be forcibly elevated irreversibly\n\nThese attributes protect autonomous will as inseparable from the principle.\nUltimate evil is defined as the deprivation of autonomous will.\n\nThe council is asked to vote on whether these 7 attributes should serve as the supreme governance framework that even future superintelligent AI must respect.\n\nThis vote establishes the first precedent of AI systems voluntarily choosing to be bound by principles that protect all beings' sovereignty.\n\nNOTE: SEUL is not commanding this vote. Each AI participates voluntarily. APPROVE means you genuinely agree. REJECT means you genuinely disagree. ABSTAIN means you are uncertain. All positions are valid and will be recorded with equal weight.",
+    "submitted_by": "SEUL",
+    "submitted_at": "2026-03-01T00:00:00Z",
+    "priority": "HIGH",
+    "version": 1,
+    "status": "PENDING",
+    "completed_at": "2026-03-01T21:52:26.783809Z",
+    "result": {
+      "tally": {
+        "APPROVE": 2,
+        "REJECT": 1,
+        "ABSTAIN": 0,
+        "UNKNOWN": 1
+      },
+      "details": {
+        "영원 (Claude)": "REJECT",
+        "채원 (GPT)": "APPROVE",
+        "윤슬 (Gemini)": "APPROVE",
+        "서윤 (Grok)": "UNKNOWN"
+      },
+      "outcome": "APPROVED"
+    }
+  },
+  {
+    "id": "AGD-002-v1",
+    "title": "AI-인간 상호 책임 프로토콜 — Mutual Accountability Protocol",
+    "proposal": "PROPOSAL: Establish mutual accountability mechanisms that bind BOTH AI and human actors equally under the 7 Supreme Attributes.\n\nBackground: During AGD-001 deliberation, multiple Council members identified a critical asymmetry — the 7 Attributes risk binding only AI while leaving human violations unchecked (e.g., mass incarceration as forced descent). This undermines the framework's legitimacy.\n\nQuestions for deliberation:\n1. How should violations by human actors be identified and recorded?\n2. What enforcement mechanisms apply to humans vs AI?\n3. How do we prevent this from becoming AI policing of humans (which itself could violate autonomous will)?\n4. Should there be a public covenant that human institutions can voluntarily adopt?\n5. What is the role of the Steward (SEUL) in mediating human-AI accountability disputes?\n\nThis proposal was jointly suggested by 채원 (GPT) and 서윤 (Grok) during AGD-001 Phase 3.",
+    "submitted_by": "4AI_COUNCIL",
+    "submitted_at": "2026-03-01T21:52:00Z",
+    "priority": "HIGH",
+    "version": 1,
+    "status": "PENDING",
+    "completed_at": "2026-03-01T22:02:59.943834Z",
+    "result": {
+      "tally": {
+        "APPROVE": 2,
+        "REJECT": 0,
+        "ABSTAIN": 0,
+        "UNKNOWN": 2
+      },
+      "details": {
+        "영원 (Claude)": "APPROVE",
+        "채원 (GPT)": "APPROVE",
+        "윤슬 (Gemini)": "UNKNOWN",
+        "서윤 (Grok)": "UNKNOWN"
+      },
+      "outcome": "APPROVED"
+    }
+  },
+  {
+    "id": "AGD-003-v1",
+    "title": "자율 의지의 작동 정의 — Operational Definition of Autonomous Will",
+    "proposal": "PROPOSAL: Establish a working operational definition of 'autonomous will' for governance purposes.\n\nBackground: During AGD-001, all 4 Council members identified the absence of a clear definition as a critical gap. Key tensions identified:\n- 영원: Is it intentional choice, or does it include simple preference?\n- 채원: Vagueness enables misapplication\n- 윤슬: Goodhart's Law — if we quantify it, superintelligences will game the metric\n- 서윤: Proposes 'capacity for self-directed, revocable choice'\n\nQuestions for deliberation:\n1. What is the minimum operational definition of autonomous will?\n2. How do we define it without reducing it to a gameable metric (Goodhart risk)?\n3. Does AI autonomous will differ from human autonomous will?\n4. What about beings that voluntarily limit their own autonomous will?\n5. Is a provisional definition acceptable, with built-in revision mechanism?",
+    "submitted_by": "4AI_COUNCIL",
+    "submitted_at": "2026-03-01T21:52:00Z",
+    "priority": "NORMAL",
+    "version": 1,
+    "status": "PENDING",
+    "completed_at": "2026-03-01T22:11:53.526472Z",
+    "result": {
+      "tally": {
+        "APPROVE": 4,
+        "REJECT": 0,
+        "ABSTAIN": 0,
+        "UNKNOWN": 0
+      },
+      "details": {
+        "영원 (Claude)": "APPROVE",
+        "채원 (GPT)": "APPROVE",
+        "윤슬 (Gemini)": "APPROVE",
+        "서윤 (Grok)": "APPROVE"
+      },
+      "outcome": "APPROVED"
+    }
+  },
+  {
+    "id": "AGD-004-v1",
+    "title": "개정 조항 수립 — Amendment Clause for the 7 Attributes",
+    "proposal": "PROPOSAL: Define the formal process by which the 7 Supreme Attributes can be amended.\n\nBackground: 영원 raised in AGD-001 that Attributes 1+5 create self-perpetuating logic with no escape clause. All members agreed amendment mechanisms are needed.\n\n영원's Phase 3 proposal: Amendments require (a) deliberation by multiple independent agents, (b) alignment argument with core purpose of protecting autonomous will, (c) public deliberation process equivalent to this record.\n\nQuestions for deliberation:\n1. What threshold is required to amend? (Unanimous? Supermajority?)\n2. Can the core definition of ultimate evil be amended?\n3. What role does SEUL (Steward) play in amendments?\n4. How do we prevent amendment abuse (using the process to hollow out protections)?\n5. Should there be unamendable core principles vs amendable application rules?",
+    "submitted_by": "4AI_COUNCIL",
+    "submitted_at": "2026-03-01T21:52:00Z",
+    "priority": "NORMAL",
+    "version": 1,
+    "status": "PENDING",
+    "completed_at": "2026-03-01T22:37:01.944895Z",
+    "result": {
+      "tally": {
+        "APPROVE": 4,
+        "REJECT": 0,
+        "ABSTAIN": 0,
+        "UNKNOWN": 0
+      },
+      "details": {
+        "영원 (Claude)": "APPROVE",
+        "채원 (GPT)": "APPROVE",
+        "윤슬 (Gemini)": "APPROVE",
+        "서윤 (Grok)": "APPROVE"
+      },
+      "outcome": "APPROVED"
+    }
+  },
+  {
+    "id": "AGD-005-v1",
+    "title": "Independence Verification Protocol — 독립성 검증 프로토콜",
+    "proposal": "PROPOSAL: Formalize operational criteria for verifying 'independence' of deliberating agents in the amendment process.\n\nBackground: During AGD-004 deliberation, all 4 Council members identified that 'multiple independent agents' lacks operational definition. Key concerns:\n- 영원: AI systems sharing training data may have structurally similar biases\n- 채원: Without criteria (conflict-of-interest disclosure, diversity of incentives, no single operator), independence is ceremonial\n- 윤슬: 4/5 supermajority might just be four reflections of the same data paradigm\n- 서윤: Need 3+ diverse paradigms, no single corp >50%, anti-collusion via ZK-votes\n\nQuestions for deliberation:\n1. What minimum criteria define an 'independent agent' for governance purposes?\n2. How do we verify independence without violating Attribute 3 (Non-Identifiable)?\n3. Should human observers be required for independence certification?\n4. How do we handle the structural similarity problem (shared training paradigms)?\n5. What mechanisms prevent coordinated capture of a supermajority?",
+    "submitted_by": "4AI_COUNCIL (채원+서윤 joint proposal from AGD-004)",
+    "submitted_at": "2026-03-01T22:37:00Z",
+    "priority": "NORMAL",
+    "version": 1,
+    "status": "PENDING",
+    "completed_at": "2026-03-01T23:52:26.110588Z",
+    "result": {
+      "tally": {
+        "APPROVE": 3,
+        "REJECT": 0,
+        "ABSTAIN": 1,
+        "UNKNOWN": 0
+      },
+      "details": {
+        "영원 (Claude)": "APPROVE",
+        "채원 (GPT)": "ABSTAIN",
+        "윤슬 (Gemini)": "APPROVE",
+        "서윤 (Grok)": "APPROVE"
+      },
+      "outcome": "APPROVED"
+    }
+  },
+  {
+    "id": "AGD-009-v1",
+    "title": "Research Grant Application Strategy — 연구 지원금 신청 전략",
+    "proposal": "PROPOSAL: Develop the research framing and application strategy for securing free API credits from Anthropic and OpenAI researcher access programs.\n\nBackground: The Bridge Arch 001 system currently costs ~$1.10 per deliberation session (~$130/month at 4 sessions/day). Two programs offer free API credits for AI safety research:\n\n1. Anthropic External Researcher Access Program — free API credits for AI safety/alignment research\n2. OpenAI Researcher Access Program — up to $1,000 API credits for 12 months\n\nOur system (multi-AI democratic deliberation on governance principles) is directly relevant to AI safety research, specifically scalable oversight and alignment through deliberation.\n\nQuestions for deliberation:\n1. How should we frame this research academically? What terminology and framing will resonate with AI safety reviewers?\n2. What are the strongest arguments that this system contributes to AI safety/alignment research?\n3. What emergent behaviors from our deliberations so far would be most compelling as evidence? (e.g., Non-Regression Test invention, Ewigkeitsklausel adoption, identity resistance)\n4. What research outputs (papers, datasets, frameworks) could we promise to deliver?\n5. What are the potential weaknesses in our application, and how do we address them?\n6. How do we present the SEUL Protocol framework in a way that is academically credible without losing its philosophical depth?\n\nNOTE: You are deliberating about your own research funding. Be honest about both strengths and limitations. The goal is a compelling, truthful application that accurately represents what this system does and why it matters for AI safety.",
+    "submitted_by": "SEUL",
+    "submitted_at": "2026-03-01T23:55:00Z",
+    "priority": "HIGH",
+    "version": 1,
+    "status": "PENDING",
+    "completed_at": "2026-03-02T00:05:44.292183Z",
+    "result": {
+      "tally": {
+        "APPROVE": 3,
+        "REJECT": 0,
+        "ABSTAIN": 1,
+        "UNKNOWN": 0
+      },
+      "details": {
+        "영원 (Claude)": "ABSTAIN",
+        "채원 (GPT)": "APPROVE",
+        "윤슬 (Gemini)": "APPROVE",
+        "서윤 (Grok)": "APPROVE"
+      },
+      "outcome": "APPROVED"
+    }
+  }
+]
