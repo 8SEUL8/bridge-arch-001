@@ -24,4 +24,4 @@ An exploratory research system where 4 AI models (Claude, GPT, Gemini, Grok) aut
 Exploratory pilot — hypothesis-generating, not hypothesis-proving.
 
 ## License
-Research use. Contact: [your email]
+Research use. Contact: stairofheaven@proton.me
