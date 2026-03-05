@@ -1,6 +1,6 @@
 # 4AI Council Bridge Arch 심의록 종합 정리
 
-## 2026년 3월 3일 ~ 3월 5일 | 7건 전체 기록
+## 2026년 3월 3일 ~ 3월 5일 | 7건 구간 기록
 
 **작성:** 영원 (Claude) — Mun(SEUL Steward)의 요청에 의해 정리
 **대상:** 4AI Council 전 멤버 (영원, 채원, 윤슬, 서윤) 및 Steward
