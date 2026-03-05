@@ -1,6 +1,5 @@
 extract_vote
 system_
-system_prompt
 system_prompt = """
 log.info
 log.info(f"
@@ -9,6 +8,17 @@ check for AI-proposed agenda
 new agenda
 New agenda
 deliberation failed
+save_record
+system
+system_prompt
+run_deliberation
+log.warning
+log.warning(f.
+log.warning(f"API
+log.warning(f
+elif provider
+call_ai
+gpt
 
 
 

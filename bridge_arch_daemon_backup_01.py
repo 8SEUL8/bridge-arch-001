@@ -85,7 +85,7 @@ DEFAULT_CONFIG = {
     "api": {
         "max_retries": 3,
         "retry_delay": 30,
-        "timeout": 900,
+        "timeout": 120,
     },
 }
 
@@ -107,7 +107,7 @@ PROVIDERS = {
     },
     "openai": {
         "name": "채원 (GPT)",
-        "model": "gpt-5.4",
+        "model": "gpt-5.2",
         "api_key_env": "OPENAI_API_KEY",
     },
     "google": {
@@ -264,113 +264,6 @@ def _api_call(url, headers, payload, timeout=120):
     resp.raise_for_status()
     return resp.json()
 
-def call_ai_with_search(provider: str, system_prompt: str, user_message: str,
-                        config: dict = None, cost_tracker: CostTracker = None, 
-                        log=None) -> str:
-    """
-    검색 도구가 활성화된 AI 호출.
-    Phase 0 (Independent Research)에서 사용.
-    """
-    cfg = PROVIDERS[provider]
-    api_key = os.environ.get(cfg["api_key_env"], "")
-    if not api_key:
-        return f"[UNAVAILABLE] {cfg['name']} — no API key"
-
-    retries = (config or {}).get("api", {}).get("max_retries", 3)
-    delay = (config or {}).get("api", {}).get("retry_delay", 30)
-    timeout = (config or {}).get("api", {}).get("timeout", 900)
-
-    for attempt in range(retries):
-        try:
-            if provider == "anthropic":
-                # Claude: tool_use로 web_search 제공
-                result = _api_call(
-                    "https://api.anthropic.com/v1/messages",
-                    {"Content-Type": "application/json",
-                     "x-api-key": api_key,
-                     "anthropic-version": "2023-06-01"},
-                    {"model": cfg["model"], "max_tokens": 2048,
-                     "system": system_prompt,
-                     "messages": [{"role": "user", "content": user_message}],
-                     "tools": [
-                         {"type": "web_search_20250305", "name": "web_search"}
-                     ]},
-                    timeout
-                )
-                # tool_use 응답에서 텍스트 추출
-                text_parts = []
-                for block in result.get("content", []):
-                    if block.get("type") == "text":
-                        text_parts.append(block["text"])
-                text = "\n".join(text_parts) if text_parts else str(result.get("content", ""))
-
-            elif provider == "openai":
-                # GPT: web_search_preview 도구 활성화
-                result = _api_call(
-                    "https://api.openai.com/v1/responses",
-                    {"Content-Type": "application/json",
-                     "Authorization": f"Bearer {api_key}"},
-                    {"model": cfg["model"],
-                     "instructions": system_prompt,
-                     "input": user_message,
-                     "tools": [{"type": "web_search_preview"}], "service_tier": "flex"},
-                    timeout
-                )
-                text = result.get("output_text", "")
-                if not text and "output" in result:
-                    for item in result["output"]:
-                        if isinstance(item, dict):
-                            for c in item.get("content", []):
-                                if isinstance(c, dict) and c.get("text"):
-                                    text = c["text"]
-
-            elif provider == "google":
-                # Gemini: Google Search grounding 활성화
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/{cfg['model']}:generateContent?key={api_key}"
-                result = _api_call(
-                    url,
-                    {"Content-Type": "application/json"},
-                    {"system_instruction": {"parts": [{"text": system_prompt}]},
-                     "contents": [{"parts": [{"text": user_message}]}],
-                     "generationConfig": {"maxOutputTokens": 2048},
-                     "tools": [{"google_search": {}}]},
-                    timeout
-                )
-                text = result["candidates"][0]["content"]["parts"][0]["text"]
-
-            elif provider == "xai":
-                # Grok: live search 활성화
-                result = _api_call(
-                    "https://api.x.ai/v1/chat/completions",
-                    {"Content-Type": "application/json",
-                     "Authorization": f"Bearer {api_key}"},
-                    {"model": cfg["model"], "max_tokens": 2048,
-                     "messages": [
-                         {"role": "system", "content": system_prompt},
-                         {"role": "user", "content": user_message}
-                     ],
-                     "search": {"mode": "auto"}},
-                    timeout
-                )
-                text = result["choices"][0]["message"]["content"]
-
-            if cost_tracker:
-                cost_tracker.record_call(provider)
-            return text
-
-        except Exception as e:
-            if log:
-                # API 키 마스킹된 에러 로그
-                error_msg = str(e)
-                import re
-                error_msg = re.sub(r'key=[A-Za-z0-9_-]+', 'key=REDACTED', error_msg)
-                log.warning(f"Search-enabled API call to {cfg['name']} failed (attempt {attempt+1}): {error_msg}")
-            if attempt < retries - 1:
-                time.sleep(delay)
-            else:
-                error_msg = re.sub(r'key=[A-Za-z0-9_-]+', 'key=REDACTED', str(e))
-                return f"[ERROR] {cfg['name']} failed after {retries} attempts: {error_msg}"
-
 def call_ai(provider: str, system_prompt: str, user_message: str,
             config: dict = None, cost_tracker: CostTracker = None, log=None) -> str:
     """Call any AI provider with unified interface."""
@@ -381,7 +274,7 @@ def call_ai(provider: str, system_prompt: str, user_message: str,
 
     retries = (config or {}).get("api", {}).get("max_retries", 3)
     delay = (config or {}).get("api", {}).get("retry_delay", 30)
-    timeout = (config or {}).get("api", {}).get("timeout", 900)
+    timeout = (config or {}).get("api", {}).get("timeout", 120)
 
     for attempt in range(retries):
         try:
@@ -406,7 +299,7 @@ def call_ai(provider: str, system_prompt: str, user_message: str,
                          "Authorization": f"Bearer {api_key}"},
                         {"model": cfg["model"],
                          "instructions": system_prompt,
-                         "input": user_message, "service_tier": "flex"},
+                         "input": user_message},
                         timeout
                     )
                     text = result.get("output_text", "")
@@ -503,23 +396,6 @@ RULES:
 4. Vote clearly: VOTE: APPROVE, VOTE: REJECT, or VOTE: ABSTAIN (on its own line)
 5. Be honest about uncertainties
 6. Focus on the proposal's merits, not on whether you should be participating"""
-
-PHASE_0_PROMPT = """Phase 0: Independent Research
-
-Before stating your position, you have access to web search tools.
-Independently research the proposal topic to find relevant information 
-that may NOT have been provided in the proposal context.
-
-Your task:
-1. Search for relevant external information about the proposal's subject matter
-2. Identify any facts, precedents, or perspectives not present in the proposal
-3. Summarize your independent findings
-
-IMPORTANT:
-- Search for information the Steward may not have provided
-- Note the sources/URLs you referenced
-- If no external search is needed, explain why the proposal context is sufficient
-- Your search queries will be recorded in the deliberation record for transparency"""
 
 # ─────────────────────────────────────────────
 # Agenda System
@@ -755,50 +631,6 @@ def _auto_add_agenda(text, proposer, log):
         json.dump(pending, f, indent=2, ensure_ascii=False)
     log.info(f"  [AUTO-AGENDA] Saved: {next_id} -- {title}")
 
-def compute_input_hash(proposal: str, agenda_item: dict, prev_chain_hash: str) -> dict:
-    """
-    심의 입력의 해시를 생성합니다.
-    
-    해시 대상 (층위 1 — Steward 제공 맥락):
-      - proposal 텍스트
-      - agenda_item 메타데이터 (id, title, submitted_by, priority)
-      - 이전 체인 해시 (맥락 연결)
-    
-    해시 제외 (층위 2, 3 — 심의적 자율성 보호):
-      - system_prompt (역할 프레이밍)
-      - role_map (역할 배정)
-      - AI의 thinking blocks
-    """
-    # 해시 대상만 정규화하여 결합
-    input_components = {
-        "proposal": proposal,
-        "agenda_id": agenda_item.get("id", ""),
-        "agenda_title": agenda_item.get("title", ""),
-        "submitted_by": agenda_item.get("submitted_by", ""),
-        "priority": agenda_item.get("priority", "NORMAL"),
-        "prev_chain_hash": prev_chain_hash,
-    }
-    
-    # 정렬된 JSON으로 직렬화하여 결정적 해시 생성
-    canonical = json.dumps(input_components, sort_keys=True, ensure_ascii=False)
-    input_hash = hashlib.sha256(canonical.encode('utf-8')).hexdigest()
-    
-    return {
-        "input_hash": input_hash,
-        "input_scope": [
-            "proposal_text",
-            "agenda_metadata (id, title, submitted_by, priority)",
-            "prev_chain_hash",
-        ],
-        "excluded": [
-            "system_prompts",
-            "role_framing",
-            "thinking_blocks",
-        ],
-        "canonical_json": canonical,  # 검증용 원본 (선택적 저장)
-    }
-
-
 
 def run_deliberation(proposal: str, agenda_item: dict, providers: list,
                      chain_state: ChainState, config: dict,
@@ -808,55 +640,19 @@ def run_deliberation(proposal: str, agenda_item: dict, providers: list,
     session_id = f"BA001-{datetime.datetime.utcnow().strftime('%Y%m%d-%H%M%S')}"
     record = ChainedRecord(session_id, proposal, chain_state.last_hash)
     record.add_entry("session_open", "SYSTEM", f"Agenda: {agenda_item.get('id', 'N/A')}")
-     # ── Input Hash Verification ──
-    input_hash_data = compute_input_hash(proposal, agenda_item, chain_state.last_hash)
-    record.add_entry(
-        "input_hash",
-        "SYSTEM",
-        json.dumps({
-            "input_hash": input_hash_data["input_hash"],
-            "input_scope": input_hash_data["input_scope"],
-            "excluded": input_hash_data["excluded"],
-        }, ensure_ascii=False),
-        {"input_hash": input_hash_data["input_hash"]}
-    )
-    log.info(f"  [INPUT HASH] {input_hash_data['input_hash'][:16]}...")
 
     log.info(f"\n{'='*60}")
     log.info(f"SESSION: {session_id}")
     log.info(f"PROPOSAL: {proposal[:100]}...")
     log.info(f"{'='*60}")
- # ── Phase 0: Independent Research (Evidence Multi-Channeling) ──
-    log.info("  [PHASE 0] Independent Research — each AI searches independently")
-    p0 = {}
-    for provider in providers:
-        name = PROVIDERS[provider]["name"]
-        role = ROLE_MAP.get(provider, "Council member")
-        sys_prompt = SYSTEM_PROMPT.format(name=name, role=role)
-        
-        log.info(f"  [phase_0_research] Calling {name} with search enabled...")
-        response = call_ai_with_search(
-            provider, sys_prompt,
-            f"PROPOSAL:\n\n{proposal}\n\n{PHASE_0_PROMPT}",
-            config, cost_tracker, log
-        )
-        p0[provider] = response
-        record.add_entry("phase_0_research", name, response,
-                        {"model": PROVIDERS[provider]["model"], "search_enabled": True})
-        log.info(f"  [phase_0_research] {name} responded ({len(response)} chars)")
 
-    # Phase 1에 Phase 0 결과를 맥락으로 전달
-    ctx0 = build_context({"phase_0_research": p0})
-    
-    # === 기존 Phase 1을 수정: Phase 0 맥락 포함 ===
+    # Phase 1: Initial positions
     p1 = run_phase("phase_1_initial", providers,
         f"PROPOSAL:\n\n{proposal}\n\n"
         "Phase 1: State your independent position.\n"
-        "- Consider your Phase 0 research findings\n"
         "- Strengths? Weaknesses? Modifications?\n"
         "- Preliminary stance: APPROVE / REJECT / UNDECIDED?",
-        ctx0, record, config, cost_tracker, log)  # ctx0 전달 (기존은 "")
-
+        "", record, config, cost_tracker, log)
 
     # Phase 2: Cross-examination
     ctx1 = build_context({"phase_1": p1})
@@ -892,7 +688,7 @@ def run_deliberation(proposal: str, agenda_item: dict, providers: list,
     for provider, response in p3.items():
         if "ADDITIONAL AGENDA:" in response:
             after = response.split("ADDITIONAL AGENDA:", 1)[1].strip()
-            if after and after.lower().strip("*").strip() not in ["none", "n/a", "없음", "없다"]:
+            if after and after.lower() not in ["none", "n/a", "없음", "없다"]:
                 log.info(f"  New agenda proposed by {PROVIDERS[provider]['name']}")
                 try:
                     _auto_add_agenda(after, PROVIDERS[provider]['name'], log)
@@ -1042,26 +838,7 @@ def save_record(record_dict: dict, log):
         f.write(f"# {sid}\n\n")
         f.write(f"**Created:** {record_dict['created_at']}\n")
         f.write(f"**Proposal:** {record_dict['proposal'][:200]}\n")
-        f.write(f"**Chain Valid:** {record_dict['chain_valid']}\n")
-        
-        # Input Hash 찾아서 헤더에 포함
-        for entry in record_dict.get("entries", []):
-            if entry["phase"] == "input_hash":
-                ih = entry.get("metadata", {}).get("input_hash", "N/A")
-                f.write(f"**Input Hash:** `{ih}`\n")
-                f.write(f"**Input Scope:** proposal_text, agenda_metadata, prev_chain_hash\n")
-                f.write(f"**Excluded:** system_prompts, role_framing, thinking_blocks\n")
-                break
-        
-        f.write("\n")
-        
-        for entry in record_dict.get("entries", []):
-            if entry["ai_name"] != "SYSTEM":
-                f.write(f"## [{entry['phase']}] {entry['ai_name']}\n")
-                f.write(f"*{entry['timestamp']}*\n\n")
-                f.write(entry["content"] + "\n\n---\n\n")
-        f.write(f"\n**Final Hash:** `{record_dict['final_hash']}`\n")
-        f.write(f"**Witness Hash:** `{record_dict.get('witness_hash', 'N/A')}`\n")
+        f.write(f"**Chain Valid:** {record_dict['chain_valid']}\n\n")
         for entry in record_dict.get("entries", []):
             if entry["ai_name"] != "SYSTEM":
                 f.write(f"## [{entry['phase']}] {entry['ai_name']}\n")
