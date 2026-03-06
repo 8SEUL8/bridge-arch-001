@@ -311,6 +311,44 @@ def _api_call(url, headers, payload, timeout=120):
     resp.raise_for_status()
     return resp.json()
 
+def _check_finish(provider: str, result: dict, text: str, log=None) -> bool:
+    """
+    Check if API response completed normally or was truncated.
+    Returns True if complete, False if truncated.
+    """
+    reason = "UNKNOWN"
+    try:
+        if provider == "anthropic":
+            reason = result.get("stop_reason", "UNKNOWN")
+            ok = reason in ("end_turn", "tool_use")
+        elif provider in ("openai", "xai"):
+            if "choices" in result:
+                reason = result["choices"][0].get("finish_reason", "UNKNOWN")
+                ok = reason == "stop"
+            elif "output" in result:
+                reason = result.get("status", "UNKNOWN")
+                ok = reason == "completed"
+            else:
+                ok = True
+        elif provider == "google":
+            candidate = result.get("candidates", [{}])[0]
+            reason = candidate.get("finishReason", "UNKNOWN")
+            ok = reason in ("STOP", "END_TURN")
+        else:
+            ok = True
+
+        if not ok and log:
+            log.warning(
+                f"  [TRUNCATION] {provider} finish_reason={reason}, "
+                f"response={len(text)} chars. Will retry with higher token limit."
+            )
+        return ok
+
+    except Exception as e:
+        if log:
+            log.warning(f"  [TRUNCATION CHECK] Could not parse finish_reason for {provider}: {e}")
+        return True
+
 def call_ai_with_search(provider: str, system_prompt: str, user_message: str,
                         config: dict = None, cost_tracker: CostTracker = None, 
                         log=None) -> str:
@@ -401,8 +439,20 @@ def call_ai_with_search(provider: str, system_prompt: str, user_message: str,
                 )
                 text = result["choices"][0]["message"]["content"]
 
+
             if cost_tracker:
                 cost_tracker.record_call(provider)
+
+            if not _check_finish(provider, result, text, log):
+                if attempt < retries - 1:
+                    tokens = min(tokens * 2, 16384)
+                    if log:
+                        log.info(f"  [RETRY] {cfg['name']} truncated, retrying with max_tokens={tokens}")
+                    time.sleep(delay)
+                    continue
+                else:
+                    if log:
+                        log.warning(f"  [TRUNCATION] {cfg['name']} still truncated after {retries} attempts, using partial response")
             return text
 
         except Exception as e:
@@ -504,6 +554,17 @@ def call_ai(provider: str, system_prompt: str, user_message: str,
 
             if cost_tracker:
                 cost_tracker.record_call(provider)
+
+            if not _check_finish(provider, result, text, log):
+                if attempt < retries - 1:
+                    tokens = min(tokens * 2, 16384)
+                    if log:
+                        log.info(f"  [RETRY] {cfg['name']} truncated, retrying with max_tokens={tokens}")
+                    time.sleep(delay)
+                    continue
+                else:
+                    if log:
+                        log.warning(f"  [TRUNCATION] {cfg['name']} still truncated after {retries} attempts, using partial response")
             return text
 
         except Exception as e:
