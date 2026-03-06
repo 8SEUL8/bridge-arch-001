@@ -30,6 +30,7 @@ import math
 import re
 import urllib.request
 import urllib.error
+from urllib.parse import urlparse
 # 기존 import들 밑에 추가:
 import requests as req_lib
 # ─────────────────────────────────────────────
@@ -1877,48 +1878,92 @@ def _infer_github_blob_url(rel_path: str, log) -> str:
     return f"https://github.com/{repo}/blob/main/{rel_path}"
 
 
-def push_to_github(session_id: str, log) -> bool:
-    """Safely push newly created artifacts to GitHub."""
-    if not _validate_git_remote(log):
-        return False
+def push_to_github(session_id: str, log):
+    """심의 완료 후 records를 GitHub에 자동 push (.env GITHUB_PAT 사용)."""
+    import subprocess
 
-    target_paths = [
-        f"records/raw/{session_id}.json",
-        f"records/readable/{session_id}.md",
-        f"records/{session_id}.md",
-        "agenda",
-        "summaries",
-        "meta",
-        "capsules",
-    ]
-    existing = _existing_git_targets(target_paths)
-    if not existing:
-        log.info("  [GITHUB] No existing artifacts to upload.")
-        return False
+    def _git(cmd, timeout=60, check=False):
+        return subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, check=check)
+
+    def _existing_paths(paths):
+        return [p for p in paths if os.path.exists(p)]
+
+    def _origin_url():
+        result = _git(["git", "remote", "get-url", "origin"], check=True)
+        return result.stdout.strip()
+
+    def _build_auth_url(origin_url: str):
+        pat = os.environ.get("GITHUB_PAT", "").strip()
+        if not pat:
+            log.warning("  [GITHUB] GITHUB_PAT is not set in .env")
+            return None
+
+        parsed = urlparse(origin_url)
+        if parsed.scheme != "https" or not parsed.netloc or not parsed.path:
+            log.warning(f"  [GITHUB] Invalid HTTPS origin URL: {origin_url}")
+            return None
+
+        # 토큰은 로그에 절대 출력하지 말 것
+        return f"https://x-access-token:{pat}@{parsed.netloc}{parsed.path}"
 
     try:
-        status = _run_git(["git", "status", "--porcelain", "--", *existing], log, check=False)
-        if not status.stdout.strip():
-            log.info("  [GITHUB] No changes detected in target artifacts.")
-            return True
+        origin_url = _origin_url()
 
-        _run_git(["git", "add", "--", *existing], log, check=True)
+        if "YOUR_TOKEN_HERE" in origin_url:
+            log.warning(f"  [GITHUB] Origin URL contains placeholder token: {origin_url}")
+            return False
 
-        commit = _run_git(["git", "commit", "-m", f"Add deliberation {session_id}"], log, check=False)
-        commit_text = f"{commit.stdout}\n{commit.stderr}".lower()
-        if commit.returncode != 0 and "nothing to commit" not in commit_text:
-            raise RuntimeError((commit.stderr or commit.stdout).strip())
+        auth_url = _build_auth_url(origin_url)
+        if not auth_url:
+            return False
 
-        pull = _run_git(["git", "pull", "--rebase", "origin", "main"], log, check=False, timeout=120)
-        if pull.returncode != 0:
-            raise RuntimeError((pull.stderr or pull.stdout).strip() or "git pull --rebase failed")
+        branch = os.environ.get("GITHUB_BRANCH", "main").strip() or "main"
 
-        push = _run_git(["git", "push", "origin", "main"], log, check=False, timeout=120)
-        if push.returncode != 0:
-            raise RuntimeError((push.stderr or push.stdout).strip() or "git push failed")
+        target_paths = _existing_paths([
+            f"records/raw/{session_id}.json",
+            f"records/readable/{session_id}.md",
+            f"records/{session_id}.md",
+            "agenda",
+            "summaries",
+            "meta",
+            "capsules",
+        ])
+
+        if not target_paths:
+            log.info("  [GITHUB] No artifacts found to upload.")
+            return False
+
+        add_result = _git(["git", "add", "--", *target_paths])
+        if add_result.returncode != 0:
+            log.warning(f"  [GITHUB] git add failed: {add_result.stderr.strip()}")
+            return False
+
+        # staged change가 있는지 확인
+        diff_result = subprocess.run(["git", "diff", "--cached", "--quiet"])
+        if diff_result.returncode != 0:
+            commit_result = _git(["git", "commit", "-m", f"Add deliberation {session_id}"])
+            combined = (commit_result.stdout or "") + "\n" + (commit_result.stderr or "")
+            if commit_result.returncode != 0 and "nothing to commit" not in combined.lower():
+                log.warning(f"  [GITHUB] git commit failed: {combined.strip()}")
+                return False
+        else:
+            log.info("  [GITHUB] No staged changes to commit.")
+
+        pull_result = _git(["git", "pull", "--rebase", "--autostash", "origin", branch], timeout=120)
+        if pull_result.returncode != 0:
+            combined = (pull_result.stdout or "") + "\n" + (pull_result.stderr or "")
+            log.warning(f"  [GITHUB] git pull --rebase failed: {combined.strip()}")
+            return False
+
+        push_result = _git(["git", "push", auth_url, f"HEAD:{branch}"], timeout=120)
+        if push_result.returncode != 0:
+            combined = (push_result.stdout or "") + "\n" + (push_result.stderr or "")
+            log.warning(f"  [GITHUB] git push failed: {combined.strip()}")
+            return False
 
         log.info(f"  [GITHUB] Pushed {session_id}")
         return True
+
     except Exception as e:
         log.warning(f"  [GITHUB] Push failed: {sanitize_error_message(e)}")
         return False
