@@ -18,3 +18,44 @@ bridge-arch-001/
 bridge-arch-public/
 bridge-arch/
 *.tar.gz
+logs/*.log
+logs/nohup.log
+bridge_arch_daemon_backup_*.py
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.venv/
+venv/
+env/
+
+# OS / editor
+.DS_Store
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# Logs
+logs/*.log
+logs/nohup.log
+logs/daemon.log
+
+# Runtime / local-only artifacts
+*.pid
+*.tmp
+*.bak
+
+# Local backup scripts
+bridge_arch_daemon_backup_*.py
+
+# Optional: local cost tracking if you don't want it versioned
+logs/cost_log.json
+
+# Optional: resonance/meta local emissions if auto-generated and not canonical
+meta/resonance_*.json
+
+# Optional: dotenv / secrets
+.env
+.env.*
