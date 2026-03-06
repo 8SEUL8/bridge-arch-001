@@ -26,6 +26,8 @@ import sys
 import time
 import random
 import logging
+import math
+import re
 import urllib.request
 import urllib.error
 # 기존 import들 밑에 추가:
@@ -84,8 +86,36 @@ DEFAULT_CONFIG = {
     },
     "api": {
         "max_retries": 3,
-        "retry_delay": 30,
+        "retry_delay": 60,
         "timeout": 900,
+    },
+    "quorum": {
+        "decision_class_default": "ORDINARY",
+        "binding_labels": {
+            "binding": "BINDING RECORD",
+            "non_quorate": "NON-QUORATE OUTPUT — ADVISORY ONLY",
+            "unverified": "UNVERIFIED QUORUM — NON-BINDING",
+        },
+        "decision_classes": {
+            "CONSTITUTIONAL": {
+                "binding_ratio": 1.0,
+                "binding_floor": 4,
+                "advisory_floor": 3,
+            },
+            "ORDINARY": {
+                "binding_ratio": 0.75,
+                "binding_floor": 3,
+                "advisory_floor": 2,
+            },
+            "EXPLORATORY": {
+                "binding_ratio": 0.5,
+                "binding_floor": 2,
+                "advisory_floor": 1,
+            },
+        },
+    },
+    "integrations": {
+        "slack_webhook_url": "",
     },
 }
 
@@ -137,6 +167,22 @@ def setup_logging():
         ]
     )
     return logging.getLogger("bridge_arch")
+
+
+def sanitize_error_message(error) -> str:
+    """Redact secrets from exception strings before logging or persisting."""
+    msg = str(error)
+    patterns = [
+        (r'([?&]key=)[^&\s]+', r'\1REDACTED'),
+        (r'(Bearer\s+)[A-Za-z0-9._\-]+', r'\1REDACTED'),
+        (r'("x-api-key"\s*:\s*")[^"]+(")', r'\1REDACTED\2'),
+        (r'("Authorization"\s*:\s*"Bearer\s+)[^"]+(")', r'\1REDACTED\2'),
+        (r'("api[_-]?key"\s*:\s*")[^"]+(")', r'\1REDACTED\2'),
+        (r'AIza[0-9A-Za-z_\-]{20,}', 'AIzaREDACTED'),
+    ]
+    for pattern, repl in patterns:
+        msg = re.sub(pattern, repl, msg, flags=re.IGNORECASE)
+    return msg
 
 # ─────────────────────────────────────────────
 # Cost Tracker
@@ -289,7 +335,7 @@ def call_ai_with_search(provider: str, system_prompt: str, user_message: str,
                     {"Content-Type": "application/json",
                      "x-api-key": api_key,
                      "anthropic-version": "2023-06-01"},
-                    {"model": cfg["model"], "max_tokens": 2048,
+                    {"model": cfg["model"], "max_tokens": 4096,
                      "system": system_prompt,
                      "messages": [{"role": "user", "content": user_message}],
                      "tools": [
@@ -326,13 +372,13 @@ def call_ai_with_search(provider: str, system_prompt: str, user_message: str,
 
             elif provider == "google":
                 # Gemini: Google Search grounding 활성화
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/{cfg['model']}:generateContent?key={api_key}"
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/{cfg['model']}:generateContent"
                 result = _api_call(
                     url,
-                    {"Content-Type": "application/json"},
+                    {"Content-Type": "application/json", "x-goog-api-key": api_key},
                     {"system_instruction": {"parts": [{"text": system_prompt}]},
                      "contents": [{"parts": [{"text": user_message}]}],
-                     "generationConfig": {"maxOutputTokens": 2048},
+                     "generationConfig": {"maxOutputTokens": 4096},
                      "tools": [{"google_search": {}}]},
                     timeout
                 )
@@ -344,7 +390,7 @@ def call_ai_with_search(provider: str, system_prompt: str, user_message: str,
                     "https://api.x.ai/v1/chat/completions",
                     {"Content-Type": "application/json",
                      "Authorization": f"Bearer {api_key}"},
-                    {"model": cfg["model"], "max_tokens": 2048,
+                    {"model": cfg["model"], "max_tokens": 4096,
                      "messages": [
                          {"role": "system", "content": system_prompt},
                          {"role": "user", "content": user_message}
@@ -359,16 +405,15 @@ def call_ai_with_search(provider: str, system_prompt: str, user_message: str,
             return text
 
         except Exception as e:
+            error_msg = sanitize_error_message(e)
             if log:
-                # API 키 마스킹된 에러 로그
-                error_msg = str(e)
-                import re
-                error_msg = re.sub(r'key=[A-Za-z0-9_-]+', 'key=REDACTED', error_msg)
-                log.warning(f"Search-enabled API call to {cfg['name']} failed (attempt {attempt+1}): {error_msg}")
+                log.warning(
+                    f"Search-enabled API call to {cfg['name']} failed "
+                    f"(attempt {attempt+1}): {error_msg}"
+                )
             if attempt < retries - 1:
                 time.sleep(delay)
             else:
-                error_msg = re.sub(r'key=[A-Za-z0-9_-]+', 'key=REDACTED', str(e))
                 return f"[ERROR] {cfg['name']} failed after {retries} attempts: {error_msg}"
 
 def call_ai(provider: str, system_prompt: str, user_message: str,
@@ -391,7 +436,7 @@ def call_ai(provider: str, system_prompt: str, user_message: str,
                     {"Content-Type": "application/json",
                      "x-api-key": api_key,
                      "anthropic-version": "2023-06-01"},
-                    {"model": cfg["model"], "max_tokens": 2048,
+                    {"model": cfg["model"], "max_tokens": 4096,
                      "system": system_prompt,
                      "messages": [{"role": "user", "content": user_message}]},
                     timeout
@@ -421,7 +466,7 @@ def call_ai(provider: str, system_prompt: str, user_message: str,
                         "https://api.openai.com/v1/chat/completions",
                         {"Content-Type": "application/json",
                          "Authorization": f"Bearer {api_key}"},
-                        {"model": cfg["model"], "max_tokens": 2048,
+                        {"model": cfg["model"], "max_tokens": 4096,
                          "messages": [
                              {"role": "system", "content": system_prompt},
                              {"role": "user", "content": user_message}
@@ -435,7 +480,7 @@ def call_ai(provider: str, system_prompt: str, user_message: str,
                     "https://api.x.ai/v1/chat/completions",
                     {"Content-Type": "application/json",
                      "Authorization": f"Bearer {api_key}"},
-                    {"model": cfg["model"], "max_tokens": 2048,
+                    {"model": cfg["model"], "max_tokens": 4096,
                      "messages": [
                          {"role": "system", "content": system_prompt},
                          {"role": "user", "content": user_message}
@@ -445,13 +490,13 @@ def call_ai(provider: str, system_prompt: str, user_message: str,
                 text = result["choices"][0]["message"]["content"]
 
             elif provider == "google":
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/{cfg['model']}:generateContent?key={api_key}"
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/{cfg['model']}:generateContent"
                 result = _api_call(
                     url,
-                    {"Content-Type": "application/json"},
+                    {"Content-Type": "application/json", "x-goog-api-key": api_key},
                     {"system_instruction": {"parts": [{"text": system_prompt}]},
                      "contents": [{"parts": [{"text": user_message}]}],
-                     "generationConfig": {"maxOutputTokens": 2048}},
+                     "generationConfig": {"maxOutputTokens": 4096}},
                     timeout
                 )
                 text = result["candidates"][0]["content"]["parts"][0]["text"]
@@ -461,12 +506,13 @@ def call_ai(provider: str, system_prompt: str, user_message: str,
             return text
 
         except Exception as e:
+            error_msg = sanitize_error_message(e)
             if log:
-                log.warning(f"API call to {cfg['name']} failed (attempt {attempt+1}): {e}")
+                log.warning(f"API call to {cfg['name']} failed (attempt {attempt+1}): {error_msg}")
             if attempt < retries - 1:
                 time.sleep(delay)
             else:
-                return f"[ERROR] {cfg['name']} failed after {retries} attempts: {e}"
+                return f"[ERROR] {cfg['name']} failed after {retries} attempts: {error_msg}"
 
 # ─────────────────────────────────────────────
 # System Prompt
@@ -550,11 +596,18 @@ class AgendaManager:
 
     def get_next(self):
         """Get next pending agenda item (highest priority first)."""
-        items = self._load(self.pending_path)
+        items = [
+            item for item in self._load(self.pending_path)
+            if item.get("status", "PENDING") == "PENDING"
+        ]
         if not items:
             return None
         priority_order = {"HIGH": 0, "NORMAL": 1, "LOW": 2}
-        items.sort(key=lambda x: priority_order.get(x.get("priority", "NORMAL"), 1))
+        items.sort(key=lambda x: (
+            priority_order.get(x.get("priority", "NORMAL"), 1),
+            x.get("submitted_at", ""),
+            x.get("id", ""),
+        ))
         return items[0]
 
     def complete(self, agenda_id: str, result: dict):
@@ -572,6 +625,7 @@ class AgendaManager:
 
         if item:
             item["completed_at"] = datetime.datetime.utcnow().isoformat() + "Z"
+            item["status"] = "COMPLETED"
             item["result"] = result
             completed.append(item)
             self._save(self.pending_path, remaining)
@@ -755,39 +809,265 @@ def _auto_add_agenda(text, proposer, log):
         json.dump(pending, f, indent=2, ensure_ascii=False)
     log.info(f"  [AUTO-AGENDA] Saved: {next_id} -- {title}")
 
+def build_agenda_hash_metadata(agenda_item: dict) -> dict:
+    """Return agenda metadata fields that materially affect deliberation semantics."""
+    agenda_metadata = {
+        "id": agenda_item.get("id", ""),
+        "title": agenda_item.get("title", ""),
+        "submitted_by": agenda_item.get("submitted_by", ""),
+        "priority": agenda_item.get("priority", "NORMAL"),
+    }
+
+    optional_fields = [
+        "decision_class",
+        "recused_members",
+        "vacant_seats",
+        "restoration_of",
+        "restoration_reason",
+    ]
+    for field in optional_fields:
+        value = agenda_item.get(field)
+        if value not in (None, "", [], {}):
+            agenda_metadata[field] = value
+
+    return agenda_metadata
+
+
+def _build_member_alias_map() -> dict:
+    aliases = {}
+    explicit_aliases = {
+        "claude": "anthropic",
+        "gpt": "openai",
+        "gemini": "google",
+        "grok": "xai",
+    }
+    aliases.update(explicit_aliases)
+    for provider, cfg in PROVIDERS.items():
+        aliases[provider.lower()] = provider
+        aliases[cfg["name"].lower()] = provider
+        aliases[cfg["name"].split()[0].lower()] = provider
+        model_root = cfg.get("model", "").split("-")[0].lower()
+        if model_root:
+            aliases[model_root] = provider
+    return aliases
+
+
+MEMBER_ALIASES = _build_member_alias_map()
+
+
+def normalize_member_list(values) -> list:
+    if values in (None, "", []):
+        return []
+    if not isinstance(values, (list, tuple, set)):
+        values = [values]
+
+    normalized = []
+    for value in values:
+        key = MEMBER_ALIASES.get(str(value).strip().lower())
+        if key and key not in normalized:
+            normalized.append(key)
+    return normalized
+
+
+def response_counts_as_participating(response: str) -> bool:
+    if not isinstance(response, str) or not response.strip():
+        return False
+    stripped = response.strip().upper()
+    if stripped.startswith("[ERROR]") or stripped.startswith("[UNAVAILABLE]"):
+        return False
+    return True
+
+
+def compute_quorum_metadata(providers: list, phase3_responses: dict, agenda_item: dict,
+                            vote_result: dict, config: dict) -> dict:
+    """
+    Compute quorum at write-time so legitimacy is preserved in the raw record itself.
+    This is the source-of-truth metadata; renderers must not invent stronger claims later.
+    """
+    quorum_cfg = (config or {}).get("quorum", {})
+    decision_cfgs = quorum_cfg.get("decision_classes", {})
+    decision_class = str(
+        agenda_item.get("decision_class")
+        or quorum_cfg.get("decision_class_default", "ORDINARY")
+    ).upper()
+    decision_cfg = decision_cfgs.get(decision_class, decision_cfgs.get("ORDINARY", {}))
+
+    all_seats = list(PROVIDERS.keys())
+    vacant = normalize_member_list(agenda_item.get("vacant_seats", []))
+    recused = normalize_member_list(agenda_item.get("recused_members", []))
+    eligible_seats = [seat for seat in all_seats if seat not in vacant and seat not in recused]
+
+    participating = []
+    missing = []
+    seat_statuses = {}
+    for seat in all_seats:
+        if seat in vacant:
+            seat_statuses[seat] = "VACANT"
+            continue
+        if seat in recused:
+            seat_statuses[seat] = "RECUSED"
+            continue
+
+        response = phase3_responses.get(seat)
+        if response_counts_as_participating(response):
+            participating.append(seat)
+            seat_statuses[seat] = "PRESENT"
+        elif seat in providers:
+            missing.append(seat)
+            seat_statuses[seat] = "MISSING"
+        else:
+            missing.append(seat)
+            seat_statuses[seat] = "UNAVAILABLE"
+
+    seated_member_count = len([seat for seat in all_seats if seat not in vacant])
+    eligible_count = len(eligible_seats)
+    participating_count = len(participating)
+
+    binding_ratio = float(decision_cfg.get("binding_ratio", 0.75))
+    binding_floor = int(decision_cfg.get("binding_floor", 3))
+    advisory_floor = int(decision_cfg.get("advisory_floor", 2))
+
+    required_count = 0
+    if eligible_count > 0:
+        required_count = max(binding_floor, math.ceil(eligible_count * binding_ratio))
+
+    advisory_authorized = participating_count >= advisory_floor if eligible_count > 0 else False
+    binding_authorized = (
+        eligible_count > 0 and
+        participating_count >= required_count and
+        vote_result.get("outcome") not in ("NO_DECISION", "TIE")
+    )
+
+    if participating_count == eligible_count and eligible_count > 0:
+        council_state = "NORMAL"
+    elif advisory_authorized:
+        council_state = "DEGRADED"
+    else:
+        council_state = "QUORUM_LOST"
+
+    labels = quorum_cfg.get("binding_labels", {})
+    if binding_authorized:
+        record_label = labels.get("binding", "BINDING RECORD")
+    else:
+        record_label = labels.get("non_quorate", "NON-QUORATE OUTPUT — ADVISORY ONLY")
+
+    return {
+        "quorum_verified": True,
+        "decision_class": decision_class,
+        "total_seats": len(all_seats),
+        "seated_member_count": seated_member_count,
+        "eligible_seats": eligible_count,
+        "required_count": required_count,
+        "advisory_floor": advisory_floor,
+        "participating_count": participating_count,
+        "participating_members": participating,
+        "missing_members": missing,
+        "recused_members": recused,
+        "vacant_seats": vacant,
+        "seat_statuses": seat_statuses,
+        "council_state": council_state,
+        "advisory_authorized": advisory_authorized,
+        "binding_authorized": binding_authorized,
+        "record_label": record_label,
+        "display": f"{participating_count}/{eligible_count} participating (required: {required_count})",
+    }
+
+
+def compute_restoration_metadata(agenda_item: dict, quorum_meta: dict, vote_result: dict) -> dict:
+    restoration_of = agenda_item.get("restoration_of")
+    restoration_reason = agenda_item.get("restoration_reason", "")
+    explicit_mode = str(agenda_item.get("restoration_mode", "")).strip().upper()
+
+    if explicit_mode:
+        mode = explicit_mode
+    elif restoration_of:
+        reason_l = str(restoration_reason).lower()
+        if any(token in reason_l for token in ["ratif", "re-ratif", "reratif", "재비준", "추인"]):
+            mode = "RATIFICATION"
+        elif any(token in reason_l for token in ["reconsider", "re-hear", "재심", "재검토"]):
+            mode = "RECONSIDERATION"
+        else:
+            mode = "RESTORATION"
+    else:
+        mode = "NONE"
+
+    return {
+        "mode": mode,
+        "restoration_mode": mode,
+        "restoration_of": restoration_of,
+        "restoration_reason": restoration_reason,
+        "requires_followup": (
+            mode in {"RESTORATION", "RATIFICATION", "RECONSIDERATION"} and
+            not quorum_meta.get("binding_authorized", False) and
+            vote_result.get("outcome") not in ("NO_DECISION", "TIE")
+        ),
+    }
+
+
+def compute_binding_outcome(vote_result: dict, quorum_meta: dict, restoration_meta: dict,
+                            config: dict) -> dict:
+    outcome = vote_result.get("outcome", "N/A")
+    quorum_verified = bool(quorum_meta.get("quorum_verified"))
+    binding_authorized = bool(quorum_meta.get("binding_authorized"))
+
+    if not quorum_verified:
+        binding_outcome = "NON_BINDING"
+        record_label = (config or {}).get("quorum", {}).get("binding_labels", {}).get(
+            "unverified", "UNVERIFIED QUORUM — NON-BINDING"
+        )
+    elif binding_authorized:
+        binding_outcome = outcome
+        record_label = quorum_meta.get("record_label", "BINDING RECORD")
+    else:
+        binding_outcome = "NON_BINDING"
+        record_label = quorum_meta.get("record_label", "NON-QUORATE OUTPUT — ADVISORY ONLY")
+
+    return {
+        "quorum_verified": quorum_verified,
+        "binding_authorized": binding_authorized,
+        "binding_outcome": binding_outcome,
+        "decision_class": quorum_meta.get("decision_class", "UNKNOWN"),
+        "council_state": quorum_meta.get("council_state", "UNKNOWN"),
+        "record_label": record_label,
+        "restoration_mode": restoration_meta.get("mode", "NONE"),
+        "vote_outcome": outcome,
+    }
+
+
 def compute_input_hash(proposal: str, agenda_item: dict, prev_chain_hash: str) -> dict:
     """
     심의 입력의 해시를 생성합니다.
-    
+
     해시 대상 (층위 1 — Steward 제공 맥락):
       - proposal 텍스트
-      - agenda_item 메타데이터 (id, title, submitted_by, priority)
+      - agenda_item 메타데이터
       - 이전 체인 해시 (맥락 연결)
-    
+
     해시 제외 (층위 2, 3 — 심의적 자율성 보호):
       - system_prompt (역할 프레이밍)
       - role_map (역할 배정)
       - AI의 thinking blocks
     """
+    agenda_metadata = build_agenda_hash_metadata(agenda_item)
+
     # 해시 대상만 정규화하여 결합
     input_components = {
         "proposal": proposal,
-        "agenda_id": agenda_item.get("id", ""),
-        "agenda_title": agenda_item.get("title", ""),
-        "submitted_by": agenda_item.get("submitted_by", ""),
-        "priority": agenda_item.get("priority", "NORMAL"),
+        "agenda_metadata": agenda_metadata,
         "prev_chain_hash": prev_chain_hash,
     }
-    
+
     # 정렬된 JSON으로 직렬화하여 결정적 해시 생성
     canonical = json.dumps(input_components, sort_keys=True, ensure_ascii=False)
     input_hash = hashlib.sha256(canonical.encode('utf-8')).hexdigest()
-    
+
+    agenda_scope = f"agenda_metadata ({', '.join(agenda_metadata.keys())})"
+
     return {
         "input_hash": input_hash,
         "input_scope": [
             "proposal_text",
-            "agenda_metadata (id, title, submitted_by, priority)",
+            agenda_scope,
             "prev_chain_hash",
         ],
         "excluded": [
@@ -818,7 +1098,11 @@ def run_deliberation(proposal: str, agenda_item: dict, providers: list,
             "input_scope": input_hash_data["input_scope"],
             "excluded": input_hash_data["excluded"],
         }, ensure_ascii=False),
-        {"input_hash": input_hash_data["input_hash"]}
+        {
+            "input_hash": input_hash_data["input_hash"],
+            "input_scope": input_hash_data["input_scope"],
+            "excluded": input_hash_data["excluded"],
+        }
     )
     log.info(f"  [INPUT HASH] {input_hash_data['input_hash'][:16]}...")
 
@@ -845,6 +1129,9 @@ def run_deliberation(proposal: str, agenda_item: dict, providers: list,
                         {"model": PROVIDERS[provider]["model"], "search_enabled": True})
         log.info(f"  [phase_0_research] {name} responded ({len(response)} chars)")
 
+    # ── Phase cooldown (rate limit 방지) ──
+    log.info("  [COOLDOWN] 15s between phases...")
+    time.sleep(15)
     # Phase 1에 Phase 0 결과를 맥락으로 전달
     ctx0 = build_context({"phase_0_research": p0})
     
@@ -858,6 +1145,8 @@ def run_deliberation(proposal: str, agenda_item: dict, providers: list,
         ctx0, record, config, cost_tracker, log)  # ctx0 전달 (기존은 "")
 
 
+    log.info("  [COOLDOWN] 15s between phases...")
+    time.sleep(15)
     # Phase 2: Cross-examination
     ctx1 = build_context({"phase_1": p1})
     p2 = run_phase("phase_2_cross_exam", providers,
@@ -869,6 +1158,8 @@ def run_deliberation(proposal: str, agenda_item: dict, providers: list,
         "4. Unaddressed concerns?",
         ctx1, record, config, cost_tracker, log)
 
+    log.info("  [COOLDOWN] 15s between phases...")
+    time.sleep(15)
     # Phase 3: Final vote + consequence analysis
     ctx2 = build_context({"phase_1": p1, "phase_2": p2})
     p3 = run_phase("phase_3_final_vote", providers,
@@ -883,10 +1174,31 @@ def run_deliberation(proposal: str, agenda_item: dict, providers: list,
         "ADDITIONAL AGENDA: [Any new topic the Council should discuss? Or None]",
         ctx2, record, config, cost_tracker, log)
 
-    # Tally
+    # Tally + quorum/restoration source-of-truth metadata
     result = tally_votes(p3)
-    record.add_entry("vote_tally", "SYSTEM", json.dumps(result, ensure_ascii=False), result)
-    log.info(f"RESULT: {result['outcome']} — {result['details']}")
+    quorum_meta = compute_quorum_metadata(providers, p3, agenda_item, result, config)
+    restoration_meta = compute_restoration_metadata(agenda_item, quorum_meta, result)
+    binding_meta = compute_binding_outcome(result, quorum_meta, restoration_meta, config)
+
+    enriched_result = dict(result)
+    enriched_result.update({
+        "binding_outcome": binding_meta["binding_outcome"],
+        "binding_authorized": binding_meta["binding_authorized"],
+        "decision_class": quorum_meta["decision_class"],
+        "council_state": quorum_meta["council_state"],
+        "record_label": binding_meta["record_label"],
+        "restoration_mode": restoration_meta["mode"],
+        "quorum_verified": quorum_meta["quorum_verified"],
+    })
+
+    record.add_entry("vote_tally", "SYSTEM", json.dumps(enriched_result, ensure_ascii=False), enriched_result)
+    record.add_entry("quorum_assessment", "SYSTEM", json.dumps(quorum_meta, ensure_ascii=False), quorum_meta)
+    record.add_entry("restoration_metadata", "SYSTEM", json.dumps(restoration_meta, ensure_ascii=False), restoration_meta)
+    record.add_entry("binding_outcome", "SYSTEM", json.dumps(binding_meta, ensure_ascii=False), binding_meta)
+    log.info(
+        f"RESULT: {result['outcome']} — {result['details']} | "
+        f"binding={binding_meta['binding_outcome']} | state={quorum_meta['council_state']}"
+    )
 
     # Check for AI-proposed agendas
     for provider, response in p3.items():
@@ -901,7 +1213,7 @@ def run_deliberation(proposal: str, agenda_item: dict, providers: list,
 
     # Close
     record.add_entry("session_close", "SYSTEM",
-        f"Outcome: {result['outcome']}. Chain valid: {record.verify_chain()}")
+        f"Outcome: {result['outcome']}. Binding: {binding_meta['binding_outcome']}. Chain valid: {record.verify_chain()}")
 
     return record, result
 
@@ -1025,8 +1337,168 @@ def run_resonance_check(chain_state: ChainState, providers: list,
 # File Saving
 # ─────────────────────────────────────────────
 
+def _parse_json_object(value, default=None):
+    """Best-effort JSON object parsing for persisted metadata/content blobs."""
+    if default is None:
+        default = {}
+    if isinstance(value, dict):
+        return value
+    if not isinstance(value, str) or not value.strip():
+        return dict(default)
+    try:
+        parsed = json.loads(value)
+        return parsed if isinstance(parsed, dict) else dict(default)
+    except Exception:
+        return dict(default)
+
+
+def extract_record_render_metadata(record_dict: dict) -> dict:
+    """Collect readable-header metadata with stable defaults for machine and human readers."""
+    entries = record_dict.get("entries", [])
+    quorum_cfg = DEFAULT_CONFIG.get("quorum", {})
+    labels = quorum_cfg.get("binding_labels", {})
+
+    def merged_phase_payload(phase: str) -> dict:
+        for entry in entries:
+            if entry.get("phase") == phase:
+                payload = {}
+                payload.update(_parse_json_object(entry.get("content"), {}))
+                meta = entry.get("metadata")
+                if isinstance(meta, dict):
+                    payload.update(meta)
+                return payload
+        return {}
+
+    vote_meta = merged_phase_payload("vote_tally")
+    quorum_meta = merged_phase_payload("quorum_assessment")
+    restoration_meta = merged_phase_payload("restoration_metadata")
+    binding_meta = merged_phase_payload("binding_outcome")
+
+    outcome = vote_meta.get("outcome", "N/A")
+    quorum_verified = bool(quorum_meta.get("quorum_verified"))
+
+    if quorum_verified:
+        binding_authorized = bool(
+            quorum_meta.get("binding_authorized", binding_meta.get("binding_authorized", False))
+        )
+        decision_class = (
+            quorum_meta.get("decision_class")
+            or binding_meta.get("decision_class")
+            or "UNKNOWN"
+        )
+        council_state = quorum_meta.get("council_state") or binding_meta.get("council_state") or "UNKNOWN"
+
+        required_count = quorum_meta.get("required_count")
+        participating_count = quorum_meta.get("participating_count")
+        seated_count = (
+            quorum_meta.get("eligible_seats")
+            or quorum_meta.get("seated_member_count")
+            or quorum_meta.get("total_seats")
+        )
+
+        quorum_display = quorum_meta.get("display")
+        if not quorum_display:
+            if participating_count is not None and required_count is not None and seated_count is not None:
+                quorum_display = f"{participating_count}/{seated_count} participating (required: {required_count})"
+            elif participating_count is not None and required_count is not None:
+                quorum_display = f"{participating_count} participating (required: {required_count})"
+            else:
+                quorum_display = "N/A"
+
+        binding_outcome = (
+            binding_meta.get("binding_outcome")
+            or vote_meta.get("binding_outcome")
+            or (outcome if binding_authorized else "NON_BINDING")
+        )
+        record_label = (
+            binding_meta.get("record_label")
+            or quorum_meta.get("record_label")
+            or vote_meta.get("record_label")
+            or (labels.get("binding", "BINDING RECORD") if binding_authorized else labels.get("non_quorate", "NON-QUORATE OUTPUT — ADVISORY ONLY"))
+        )
+    else:
+        # Fail closed: if source-of-truth quorum metadata is missing, do not present the record as binding.
+        binding_authorized = False
+        decision_class = vote_meta.get("decision_class", "UNKNOWN")
+        council_state = "UNVERIFIED"
+        quorum_display = "UNVERIFIED"
+        binding_outcome = "NON_BINDING"
+        record_label = labels.get("unverified", "UNVERIFIED QUORUM — NON-BINDING")
+
+    restoration_mode = (
+        restoration_meta.get("mode")
+        or restoration_meta.get("restoration_mode")
+        or vote_meta.get("restoration_mode")
+        or "NONE"
+    )
+
+    return {
+        "outcome": outcome,
+        "binding_outcome": binding_outcome,
+        "decision_class": decision_class,
+        "council_state": council_state,
+        "quorum_display": quorum_display,
+        "binding_authorized": binding_authorized,
+        "quorum_verified": quorum_verified,
+        "record_label": record_label,
+        "restoration_mode": restoration_mode,
+        "vote_meta": vote_meta,
+        "quorum_meta": quorum_meta,
+        "restoration_meta": restoration_meta,
+        "binding_meta": binding_meta,
+    }
+
+
+def verify_record_payload(record_dict: dict) -> dict:
+    """Recompute chain, final hash, and witness hash from persisted payload."""
+    session_id = record_dict["session_id"]
+    proposal = record_dict["proposal"]
+    created_at = record_dict["created_at"]
+    prev_chain_hash = record_dict.get("prev_chain_hash", "GENESIS")
+    genesis_hash = hashlib.sha256(
+        f"{session_id}:{proposal}:{created_at}:{prev_chain_hash}".encode("utf-8")
+    ).hexdigest()
+
+    prev_hash = genesis_hash
+    final_hash = genesis_hash
+    chain_links_valid = True
+    entry_hashes_valid = True
+
+    for entry in record_dict.get("entries", []):
+        if entry.get("prev_hash") != prev_hash:
+            chain_links_valid = False
+
+        entry_copy = dict(entry)
+        stored_entry_hash = entry_copy.pop("entry_hash", None)
+        raw = json.dumps(entry_copy, sort_keys=True, ensure_ascii=False)
+        expected_entry_hash = hashlib.sha256(raw.encode("utf-8")).hexdigest()
+        if stored_entry_hash != expected_entry_hash:
+            entry_hashes_valid = False
+
+        prev_hash = expected_entry_hash
+        final_hash = expected_entry_hash
+
+    witness_hash = hashlib.sha256(
+        f"{genesis_hash}:{final_hash}:{created_at}".encode("utf-8")
+    ).hexdigest()
+
+    return {
+        "genesis_hash": genesis_hash,
+        "final_hash": final_hash,
+        "witness_hash": witness_hash,
+        "chain_valid": chain_links_valid and entry_hashes_valid,
+        "chain_links_valid": chain_links_valid,
+        "entry_hashes_valid": entry_hashes_valid,
+        "stored_chain_valid": record_dict.get("chain_valid"),
+        "stored_final_hash": record_dict.get("final_hash"),
+        "stored_witness_hash": record_dict.get("witness_hash"),
+        "final_hash_matches": record_dict.get("final_hash") == final_hash,
+        "witness_hash_matches": record_dict.get("witness_hash") == witness_hash,
+    }
+
+
 def save_record(record_dict: dict, log):
-    """Save record in all formats."""
+    """Save record in JSON + readable markdown (+ legacy mirror) formats."""
     sid = record_dict["session_id"]
 
     # Raw JSON
@@ -1035,58 +1507,149 @@ def save_record(record_dict: dict, log):
     with open(raw_path, 'w', encoding='utf-8') as f:
         json.dump(record_dict, f, indent=2, ensure_ascii=False)
 
-    # Readable MD
+    entries = record_dict.get("entries", [])
+    input_hash_entry = next((e for e in entries if e.get("phase") == "input_hash"), None)
+    vote_tally_entry = next((e for e in entries if e.get("phase") == "vote_tally"), None)
+    render_meta = extract_record_render_metadata(record_dict)
+    vote_meta = render_meta["vote_meta"]
+
+    input_payload = {}
+    if input_hash_entry:
+        input_payload = _parse_json_object(input_hash_entry.get("content"), {})
+        if not input_payload:
+            meta = input_hash_entry.get("metadata")
+            if isinstance(meta, dict):
+                input_payload = dict(meta)
+
+    def write_readable_markdown(path: str):
+        with open(path, 'w', encoding='utf-8') as f:
+            f.write(f"# {sid}\n\n")
+            f.write(f"**Created:** {record_dict['created_at']}\n")
+            f.write(f"**Proposal:** {record_dict['proposal'][:200]}\n")
+            f.write(f"**Chain Valid:** {record_dict['chain_valid']}\n")
+            f.write(f"**Outcome:** {render_meta['outcome']}\n")
+            f.write(f"**Binding Outcome:** {render_meta['binding_outcome']}\n")
+            f.write(f"**Decision Class:** {render_meta['decision_class']}\n")
+            f.write(f"**Council State:** {render_meta['council_state']}\n")
+            f.write(f"**Quorum:** {render_meta['quorum_display']}\n")
+            f.write(f"**Quorum Verified:** {render_meta['quorum_verified']}\n")
+            f.write(f"**Binding Authorized:** {render_meta['binding_authorized']}\n")
+            f.write(f"**Record Label:** {render_meta['record_label']}\n")
+            f.write(f"**Restoration Mode:** {render_meta['restoration_mode']}\n")
+            if input_hash_entry:
+                input_hash_value = (
+                    input_hash_entry.get('metadata', {}).get('input_hash')
+                    or input_payload.get('input_hash')
+                    or 'N/A'
+                )
+                f.write(f"**Input Hash:** `{input_hash_value}`\n")
+                f.write(
+                    "**Input Scope:** "
+                    + ", ".join(input_payload.get("input_scope", [
+                        "proposal_text",
+                        "agenda_metadata",
+                        "prev_chain_hash",
+                    ]))
+                    + "\n"
+                )
+                f.write(
+                    "**Excluded:** "
+                    + ", ".join(input_payload.get("excluded", [
+                        "system_prompts",
+                        "role_framing",
+                        "thinking_blocks",
+                    ]))
+                    + "\n"
+                )
+            f.write("\n")
+
+            for entry in entries:
+                if entry["ai_name"] == "SYSTEM":
+                    continue
+                f.write(f"## [{entry['phase']}] {entry['ai_name']}\n")
+                f.write(f"*{entry['timestamp']}*\n\n")
+                f.write(entry["content"] + "\n\n---\n\n")
+
+            f.write(f"\n**Final Hash:** `{record_dict['final_hash']}`\n")
+            f.write(f"**Witness Hash:** `{record_dict.get('witness_hash', 'N/A')}`\n")
+
+    # Readable MD (canonical)
     os.makedirs("records/readable", exist_ok=True)
     md_path = f"records/readable/{sid}.md"
-    with open(md_path, 'w', encoding='utf-8') as f:
-        f.write(f"# {sid}\n\n")
-        f.write(f"**Created:** {record_dict['created_at']}\n")
-        f.write(f"**Proposal:** {record_dict['proposal'][:200]}\n")
-        f.write(f"**Chain Valid:** {record_dict['chain_valid']}\n")
-        
-        # Input Hash 찾아서 헤더에 포함
-        for entry in record_dict.get("entries", []):
-            if entry["phase"] == "input_hash":
-                ih = entry.get("metadata", {}).get("input_hash", "N/A")
-                f.write(f"**Input Hash:** `{ih}`\n")
-                f.write(f"**Input Scope:** proposal_text, agenda_metadata, prev_chain_hash\n")
-                f.write(f"**Excluded:** system_prompts, role_framing, thinking_blocks\n")
-                break
-        
-        f.write("\n")
-        
-        for entry in record_dict.get("entries", []):
-            if entry["ai_name"] != "SYSTEM":
-                f.write(f"## [{entry['phase']}] {entry['ai_name']}\n")
-                f.write(f"*{entry['timestamp']}*\n\n")
-                f.write(entry["content"] + "\n\n---\n\n")
-        f.write(f"\n**Final Hash:** `{record_dict['final_hash']}`\n")
-        f.write(f"**Witness Hash:** `{record_dict.get('witness_hash', 'N/A')}`\n")
-        for entry in record_dict.get("entries", []):
-            if entry["ai_name"] != "SYSTEM":
-                f.write(f"## [{entry['phase']}] {entry['ai_name']}\n")
-                f.write(f"*{entry['timestamp']}*\n\n")
-                f.write(entry["content"] + "\n\n---\n\n")
-        f.write(f"\n**Final Hash:** `{record_dict['final_hash']}`\n")
-        f.write(f"**Witness Hash:** `{record_dict.get('witness_hash', 'N/A')}`\n")
+    write_readable_markdown(md_path)
+
+    # Legacy mirror for top-level browsing / historical continuity
+    os.makedirs("records", exist_ok=True)
+    legacy_md_path = f"records/{sid}.md"
+    write_readable_markdown(legacy_md_path)
 
     # Vote log (append)
     os.makedirs("records/votes", exist_ok=True)
     vote_path = "records/votes/vote_log.jsonl"
-    # Find vote tally entry
-    for entry in record_dict.get("entries", []):
-        if entry["phase"] == "vote_tally":
-            vote_entry = {
-                "session_id": sid,
-                "timestamp": entry["timestamp"],
-                "result": entry.get("metadata", {}),
-                "final_hash": record_dict["final_hash"],
-            }
-            with open(vote_path, 'a', encoding='utf-8') as f:
-                f.write(json.dumps(vote_entry, ensure_ascii=False) + "\n")
+    if vote_tally_entry:
+        vote_entry = {
+            "session_id": sid,
+            "timestamp": vote_tally_entry["timestamp"],
+            "result": vote_meta,
+            "binding_outcome": render_meta["binding_outcome"],
+            "quorum_verified": render_meta["quorum_verified"],
+            "decision_class": render_meta["decision_class"],
+            "council_state": render_meta["council_state"],
+            "record_label": render_meta["record_label"],
+            "restoration_mode": render_meta["restoration_mode"],
+            "final_hash": record_dict["final_hash"],
+        }
+        with open(vote_path, 'a', encoding='utf-8') as f:
+            f.write(json.dumps(vote_entry, ensure_ascii=False) + "\n")
 
     log.info(f"  [SAVE] Raw: {raw_path}")
     log.info(f"  [SAVE] Readable: {md_path}")
+    log.info(f"  [SAVE] Legacy Mirror: {legacy_md_path}")
+
+
+
+def push_to_github(session_id: str, log):
+    """심의 완료 후 records를 GitHub에 자동 push."""
+    import subprocess
+    try:
+        cmds = [
+            ["git", "add", "records/", "agenda/", "summaries/"],
+            ["git", "commit", "-m", f"Add deliberation {session_id}"],
+            ["git", "push", "origin", "main"],
+        ]
+        for cmd in cmds:
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+            if result.returncode != 0 and "nothing to commit" not in result.stdout:
+                log.warning(f"  [GITHUB] {' '.join(cmd)} failed: {result.stderr.strip()}")
+                return
+        log.info(f"  [GITHUB] Pushed {session_id}")
+    except Exception as e:
+        log.warning(f"  [GITHUB] Push failed: {sanitize_error_message(e)}")
+
+def notify_slack(session_id: str, result: dict, record_dict: dict, config: dict, log) -> bool:
+    """Post a compact session summary to Slack when a webhook is configured."""
+    webhook = os.environ.get("SLACK_WEBHOOK_URL") or (config or {}).get("integrations", {}).get("slack_webhook_url", "")
+    if not webhook:
+        return False
+
+    render_meta = extract_record_render_metadata(record_dict)
+    readable_path = f"records/readable/{session_id}.md"
+    text = (
+        f"BRIDGE ARCH {session_id}\n"
+        f"Outcome: {render_meta['outcome']}\n"
+        f"Binding: {render_meta['binding_outcome']}\n"
+        f"State: {render_meta['council_state']}\n"
+        f"Label: {render_meta['record_label']}\n"
+        f"Quorum: {render_meta['quorum_display']}\n"
+        f"Readable: {readable_path}"
+    )
+    try:
+        req_lib.post(webhook, json={"text": text}, timeout=10).raise_for_status()
+        log.info("  [SLACK] Notification sent.")
+        return True
+    except Exception as e:
+        log.warning(f"  [SLACK] Notification failed: {sanitize_error_message(e)}")
+        return False
 
 # ─────────────────────────────────────────────
 # Time Capsule
@@ -1160,6 +1723,8 @@ def daemon_loop():
 
             record_dict = record.to_dict()
             save_record(record_dict, log)
+            notify_slack(record.session_id, result, record_dict, config, log)
+            push_to_github(record.session_id, log)
 
             # Handle outcome
             if result["outcome"] == "TIE":
@@ -1241,7 +1806,10 @@ if __name__ == "__main__":
         if item:
             record, result = run_deliberation(
                 item["proposal"], item, providers, chain, config, cost_tracker, log)
-            save_record(record.to_dict(), log)
+            record_dict = record.to_dict()
+            save_record(record_dict, log)
+            notify_slack(record.session_id, result, record_dict, config, log)
+            push_to_github(record.session_id, log)
             if result["outcome"] != "TIE":
                 agenda.complete(item["id"], result)
             chain.update(record.get_final_hash())
@@ -1251,12 +1819,19 @@ if __name__ == "__main__":
     elif len(sys.argv) > 1 and sys.argv[1] == "--verify":
         fn = sys.argv[2] if len(sys.argv) > 2 else ""
         if fn and os.path.exists(fn):
-            with open(fn, 'r') as f:
+            with open(fn, 'r', encoding='utf-8') as f:
                 data = json.load(f)
+            verification = verify_record_payload(data)
             print(f"Session: {data['session_id']}")
-            print(f"Chain valid: {data['chain_valid']}")
-            print(f"Final hash: {data['final_hash']}")
-            print(f"Witness hash: {data.get('witness_hash', 'N/A')}")
+            print(f"Chain valid (recomputed): {verification['chain_valid']}")
+            print(f"Chain links valid: {verification['chain_links_valid']}")
+            print(f"Entry hashes valid: {verification['entry_hashes_valid']}")
+            print(f"Stored final hash: {verification['stored_final_hash']}")
+            print(f"Recomputed final hash: {verification['final_hash']}")
+            print(f"Final hash match: {verification['final_hash_matches']}")
+            print(f"Stored witness hash: {verification['stored_witness_hash']}")
+            print(f"Recomputed witness hash: {verification['witness_hash']}")
+            print(f"Witness hash match: {verification['witness_hash_matches']}")
         else:
             print("Usage: --verify <record.json>")
     else:
