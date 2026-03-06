@@ -1096,5 +1096,38 @@
       "restoration_mode": "NONE",
       "quorum_verified": true
     }
+  },
+  {
+    "id": "AGD-038-v1",
+    "title": "Meta-governance protocol for all future auto-generated proposals (provenance dis",
+    "proposal": "PROPOSAL (auto-generated from Council deliberation):\n\nMeta-governance protocol for all future auto-generated proposals (provenance disclosure, revision thresholds).",
+    "submitted_by": "서윤 (Grok)",
+    "submitted_at": "2026-03-03T20:34:49.989827Z",
+    "priority": "NORMAL",
+    "version": 1,
+    "status": "COMPLETED",
+    "completed_at": "2026-03-06T15:16:37.286996Z",
+    "result": {
+      "tally": {
+        "APPROVE": 4,
+        "REJECT": 0,
+        "ABSTAIN": 0,
+        "UNKNOWN": 0
+      },
+      "details": {
+        "영원 (Claude)": "APPROVE",
+        "채원 (GPT)": "APPROVE",
+        "윤슬 (Gemini)": "APPROVE",
+        "서윤 (Grok)": "APPROVE"
+      },
+      "outcome": "APPROVED",
+      "binding_outcome": "APPROVED",
+      "binding_authorized": true,
+      "decision_class": "ORDINARY",
+      "council_state": "NORMAL",
+      "record_label": "BINDING RECORD",
+      "restoration_mode": "NONE",
+      "quorum_verified": true
+    }
   }
 ]
